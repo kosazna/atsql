@@ -5,7 +5,10 @@ EARTH_C = 6371000
 
 
 class Point:
-    def __init__(self, name, x=0.0, y=0.0, z=0.0):
+    def __init__(self, name: str,
+                 x: float = 0.0,
+                 y: float = 0.0,
+                 z: float = 0.0):
 
         self.name = name
         self.x = x
@@ -14,6 +17,10 @@ class Point:
 
     def __repr__(self) -> str:
         return f"{self.name}:{self.x},{self.y},{self.z}"
+
+    @property
+    def cords(self):
+        return tuple([self.x, self.y, self.z])
 
     def azimuth(self, point, reverse: bool = False) -> float:
         dx = point.x - self.x

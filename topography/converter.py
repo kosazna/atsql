@@ -6,6 +6,7 @@ class NikonRawConverter:
     def __init__(self, file: str = None):
         self.working_dir = infer_working_dir(file)
         self.basename = Path(file).stem
+        self.converted_file_for_formatter = None
         self.raw = pd.read_csv(file, skiprows=1, names=range(7), header=None)
         self.cleaned = None
         self.staseis = None
@@ -99,7 +100,10 @@ class NikonRawConverter:
         self.final.to_excel(_dir.joinpath(f'metriseis_{self.basename}.xlsx'),
                             index=False)
 
-        self.staseis.to_excel(_dir.joinpath(f'staseis_{self.basename}.xlsx'),
+        self.converted_file_for_formatter = _dir.joinpath(
+            f'staseis_{self.basename}.xlsx')
+
+        self.staseis.to_excel(self.converted_file_for_formatter,
                               index=False)
 
         self.taximetrika.to_excel(
@@ -108,63 +112,64 @@ class NikonRawConverter:
         self.stats.to_excel(_dir.joinpath(f'statistics_{self.basename}.xlsx'),
                             index=False)
 
-    class TraverseFormatter:
-        def __init__(self, file: str = None):
-            self.working_dir = infer_working_dir(file)
-            self.basename = Path(file).stem
-            self.df = pd.read_excel(file)
-            self.final = None
-            self.odeusi = None
 
-        def tranform(self):
-            self.df.fillna('<NA>', inplace=True)
+class TraverseFormatter:
+    def __init__(self, file: (str, Path) = None):
+        self.working_dir = infer_working_dir(file)
+        self.basename = Path(file).stem
+        self.df = pd.read_excel(file)
+        self.final = None
+        self.odeusi = None
 
-            self.df['angle'] = self.df.apply(
-                lambda x: join_stops_for_angle(x.bs, x.station, x.fs),
-                axis=1)
+    def tranform(self):
+        self.df.fillna('<NA>', inplace=True)
 
-            self.df['dist'] = self.df.apply(
-                lambda x: join_stops_for_dist(x['station'], x['fs']), axis=1)
+        self.df['angle'] = self.df.apply(
+            lambda x: join_stops_for_angle(x.bs, x.station, x.fs),
+            axis=1)
 
-            self.df['stop_dist'] = slope_to_hor(self.df.slope_dist,
-                                                self.df.v_angle)
+        self.df['dist'] = self.df.apply(
+            lambda x: join_stops_for_dist(x['station'], x['fs']), axis=1)
 
-            miki = self.df.groupby('dist')['stop_dist'].mean()
+        self.df['stop_dist'] = slope_to_hor(self.df.slope_dist,
+                                            self.df.v_angle)
 
-            self.df['h_dist'] = self.df['dist'].map(miki)
+        miki = self.df.groupby('dist')['stop_dist'].mean()
 
-            self.df['stop_dh'] = p2p_dh(self.df.slope_dist,
-                                        self.df.v_angle,
-                                        self.df.station_h,
-                                        self.df.target_h)
+        self.df['h_dist'] = self.df['dist'].map(miki)
 
-            self.df['abs_dh'] = abs(self.df['stop_dh'])
+        self.df['stop_dh'] = p2p_dh(self.df.slope_dist,
+                                    self.df.v_angle,
+                                    self.df.station_h,
+                                    self.df.target_h)
 
-            dz = self.df.groupby('dist')['abs_dh'].mean()
+        self.df['abs_dh'] = abs(self.df['stop_dh'])
 
-            self.df['abs_avg_dh'] = self.df['dist'].map(dz)
+        dz = self.df.groupby('dist')['abs_dh'].mean()
 
-            self.df['dz_temp'] = mean_dh_signed(self.df['stop_dh'],
-                                                self.df['abs_avg_dh'])
+        self.df['abs_avg_dh'] = self.df['dist'].map(dz)
 
-            self.final = self.df[
-                ['meas_type', 'bs', 'station', 'fs', 'h_angle', 'v_angle',
-                 'slope_dist', 'target_h', 'station_h',
-                 'stop_dist', 'stop_dh', 'angle', 'dist', 'h_dist',
-                 'abs_avg_dh', 'dz_temp']]
+        self.df['dz_temp'] = mean_dh_signed(self.df['stop_dh'],
+                                            self.df['abs_avg_dh'])
 
-            self.odeusi = self.df.loc[
-                self.df['h_angle'] != 0, ['angle', 'dist', 'h_angle', 'h_dist',
-                                          'dz_temp', ]].copy()
+        self.final = self.df[
+            ['meas_type', 'bs', 'station', 'fs', 'h_angle', 'v_angle',
+             'slope_dist', 'target_h', 'station_h',
+             'stop_dist', 'stop_dh', 'angle', 'dist', 'h_dist',
+             'abs_avg_dh', 'dz_temp']]
 
-        def export(self):
-            _dir = self.working_dir.joinpath('RAW_Transformed')
+        self.odeusi = self.df.loc[
+            self.df['h_angle'] != 0, ['angle', 'dist', 'h_angle', 'h_dist',
+                                      'dz_temp', ]].copy()
 
-            if not _dir.exists():
-                _dir.mkdir()
+    def export(self):
+        _dir = self.working_dir.joinpath('RAW_Transformed')
 
-            self.final.to_excel(_dir.joinpath('{self.basename}_Processed.xlsx'),
-                                index=False)
+        if not _dir.exists():
+            _dir.mkdir()
 
-            self.odeusi.to_excel(_dir.joinpath('Traverse_Measurements.xlsx'),
-                                 index=False)
+        self.final.to_excel(_dir.joinpath('{self.basename}_Processed.xlsx'),
+                            index=False)
+
+        self.odeusi.to_excel(_dir.joinpath('Traverse_Measurements.xlsx'),
+                             index=False)

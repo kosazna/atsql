@@ -85,8 +85,11 @@ def create_data(metriseis: str):
     return df
 
 
-def infer_working_dir(file: str):
-    _path = Path(file)
+def infer_working_dir(file: (str, Path)):
+    if isinstance(file, Path):
+        _path = file
+    else:
+        _path = Path(file)
 
     if str(_path.parent).endswith('RAW'):
         return _path.parent.parent
