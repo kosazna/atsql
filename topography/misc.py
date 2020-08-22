@@ -91,7 +91,9 @@ def infer_working_dir(file: (str, Path)):
     else:
         _path = Path(file)
 
-    if str(_path.parent).endswith('RAW'):
+    if str(_path.parent).startswith('RAW') or \
+            str(_path.parent).endswith('Processed') or \
+            str(_path.parent).endswith('Transformed'):
         return _path.parent.parent
     else:
         return _path.parent

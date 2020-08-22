@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 from typing import List
 from .computation import *
 from .misc import *
@@ -9,7 +8,7 @@ class OpenTraverse:
     def __init__(self, stops: list,
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
-                 working_dir: str = '.'):
+                 working_dir: (str, Path) = None):
         self.working_dir = working_dir
         self.stops = stops
         self.stops_count = len(stops)
@@ -24,9 +23,11 @@ class OpenTraverse:
             how='left')
 
     @classmethod
-    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
+    def from_excel(cls, file: (str, Path),
+                   stops: list,
+                   start: List[Point] = None):
         data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
+        working_dir = Path(file).parent.parent
         return cls(stops, data, start, working_dir)
 
     @property
@@ -130,22 +131,19 @@ class OpenTraverse:
     def export(self):
         file_to_export = self.odeusi.copy()
 
-        _basedir = self.working_dir
-        _subdir = 'Traverses'
+        _dir = self.working_dir.joinpath('Traverses')
 
-        _dir = os.path.join(_basedir, _subdir)
-
-        if not os.path.exists(_dir):
-            os.makedirs(_dir)
+        if not _dir.exists():
+            _dir.mkdir()
 
         name = '-'.join(self.stops) + f'_{type(self).__name__}'
-        file_to_export.round(4).to_excel(os.path.join(_dir, f'T_{name}.xlsx'),
+        file_to_export.round(4).to_excel(_dir.joinpath(f'T_{name}.xlsx'),
                                          index=False)
 
         file_to_export = file_to_export[['station', 'X', 'Y', 'Z']].set_index(
             'station')
 
-        file_to_export.round(4).to_excel(os.path.join(_dir, f'S_{name}.xlsx'))
+        file_to_export.round(4).to_excel(_dir.joinpath(f'S_{name}.xlsx'))
 
 
 class LinkTraverse(OpenTraverse):
@@ -153,24 +151,24 @@ class LinkTraverse(OpenTraverse):
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
                  finish: List[Point] = None,
-                 working_dir: str = '.'):
+                 working_dir: (str, Path) = '.'):
 
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
-        self.l1 = finish[-2] if finish else None
-        self.l2 = finish[-1] if finish else None
+        self.l1 = finish[0] if finish else None
+        self.l2 = finish[1] if finish else None
         self.a_finish = self.l1.azimuth(self.l2)
         self._l1_temp_x = 0
         self._l1_temp_y = 0
         self._l1_temp_z = 0
 
     @classmethod
-    def from_excel(cls, file: str,
+    def from_excel(cls, file: (str, Path),
                    stops: list,
                    start: List[Point] = None,
                    finish: List[Point] = None):
         data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
+        working_dir = Path(file).parent.parent
         return cls(stops, data, start, finish, working_dir)
 
     @property
@@ -338,7 +336,7 @@ class ClosedTraverse(OpenTraverse):
     def __init__(self, stops: list,
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
-                 working_dir: str = '.'):
+                 working_dir: (str, Path) = '.'):
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
         self.a_finish = self.f2.azimuth(self.f1)
@@ -347,9 +345,11 @@ class ClosedTraverse(OpenTraverse):
         self._l1_temp_z = 0
 
     @classmethod
-    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
+    def from_excel(cls, file: (str, Path),
+                   stops: list,
+                   start: List[Point] = None):
         data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
+        working_dir = Path(file).parent.parent
         return cls(stops, data, start, working_dir)
 
     @property

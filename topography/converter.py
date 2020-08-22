@@ -4,7 +4,7 @@ from .computation import *
 
 class NikonRawConverter:
     def __init__(self, file: str = None):
-        self.working_dir = infer_working_dir(file)
+        self.working_dir = Path(file).parent
         self.basename = Path(file).stem
         self.converted_file_for_formatter = None
         self.raw = pd.read_csv(file, skiprows=1, names=range(7), header=None)
@@ -115,7 +115,7 @@ class NikonRawConverter:
 
 class TraverseFormatter:
     def __init__(self, file: (str, Path) = None):
-        self.working_dir = infer_working_dir(file)
+        self.working_dir = Path(file).parent.parent
         self.basename = Path(file).stem
         self.df = pd.read_excel(file)
         self.final = None
@@ -168,7 +168,7 @@ class TraverseFormatter:
         if not _dir.exists():
             _dir.mkdir()
 
-        self.final.to_excel(_dir.joinpath('{self.basename}_Processed.xlsx'),
+        self.final.to_excel(_dir.joinpath(f'{self.basename}_Processed.xlsx'),
                             index=False)
 
         self.odeusi.to_excel(_dir.joinpath('Traverse_Measurements.xlsx'),
