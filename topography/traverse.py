@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from typing import List
 from .computation import *
@@ -22,6 +23,12 @@ class OpenTraverse:
             columns=['angle', 'distance']), self.metriseis, on='angle',
             how='left')
 
+    @classmethod
+    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
+        data = pd.read_excel(file)
+        working_dir = '\\'.join(file.split('\\')[:-2])
+        return cls(stops, data, start, working_dir)
+
     @property
     def mean_elevation(self):
         return round((self.f2.z + self.f1.z) / 2, 3)
@@ -29,12 +36,6 @@ class OpenTraverse:
     @property
     def k(self):
         return round8(calc_k(self.f2.x, self.f1.x))
-
-    @classmethod
-    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
-        return cls(stops, data, start, working_dir)
 
     def __repr__(self):
         msg = f"""
@@ -163,6 +164,15 @@ class LinkTraverse(OpenTraverse):
         self._l1_temp_y = 0
         self._l1_temp_z = 0
 
+    @classmethod
+    def from_excel(cls, file: str,
+                   stops: list,
+                   start: List[Point] = None,
+                   finish: List[Point] = None):
+        data = pd.read_excel(file)
+        working_dir = '\\'.join(file.split('\\')[:-2])
+        return cls(stops, data, start, finish, working_dir)
+
     @property
     def mean_elevation(self):
         return round((self.f2.z + self.l1.z) / 2, 3)
@@ -219,15 +229,6 @@ class LinkTraverse(OpenTraverse):
             return self.wz / self.length
         except ZeroDivisionError:
             return 0
-
-    @classmethod
-    def from_excel(cls, file: str,
-                   stops: list,
-                   start: List[Point] = None,
-                   finish: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
-        return cls(stops, data, start, finish, working_dir)
 
     def __repr__(self):
         msg = f"""
@@ -345,6 +346,12 @@ class ClosedTraverse(OpenTraverse):
         self._l1_temp_y = 0
         self._l1_temp_z = 0
 
+    @classmethod
+    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
+        data = pd.read_excel(file)
+        working_dir = '\\'.join(file.split('\\')[:-2])
+        return cls(stops, data, start, working_dir)
+
     @property
     def a_measured(self):
         return azimuth_from_measurements(self.a_start, self.odeusi['h_angle'])
@@ -393,12 +400,6 @@ class ClosedTraverse(OpenTraverse):
             return self.wz / self.length
         except ZeroDivisionError:
             return 0
-
-    @classmethod
-    def from_excel(cls, file: str, stops: list, start: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = '\\'.join(file.split('\\')[:-2])
-        return cls(stops, data, start, working_dir)
 
     def __repr__(self):
         msg = f"""

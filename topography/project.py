@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .traverse import *
 from .taximetria import *
 from datetime import datetime
