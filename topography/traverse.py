@@ -13,7 +13,7 @@ class OpenTraverse:
         self.stops = stops
         self.stops_count = len(stops)
         self.length = 0
-        self.metriseis = data
+        self.metriseis = data.copy()
         self.f1 = start[0] if start else None
         self.f2 = start[1] if start else None
         self.a_start = self.f1.azimuth(self.f2)
