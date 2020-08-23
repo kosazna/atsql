@@ -16,11 +16,14 @@ class Point:
         self.z = z
 
     def __repr__(self) -> str:
-        return f"{self.name}:{self.x},{self.y},{self.z}"
+        return f"{self.name:<6}({self.x:<11.4f},{self.y:<12.4f},{self.z:<8.4f})"
 
     @property
     def cords(self):
         return tuple([self.x, self.y, self.z])
+
+    def split(self):
+        return tuple([self.name, self.cords])
 
     def azimuth(self, point, reverse: bool = False) -> float:
         dx = point.x - self.x
@@ -37,6 +40,12 @@ class Point:
             return 200 + delta_grad if not reverse else 200 - delta_grad
         elif dx < 0 and dy > 0:
             return 400 - delta_grad if not reverse else delta_grad
+
+    def distance(self, point) -> float:
+        dx = point.x - self.x
+        dy = point.y - self.y
+
+        return round8(np.sqrt(dx ** 2 + dy ** 2))
 
 
 @vectorize

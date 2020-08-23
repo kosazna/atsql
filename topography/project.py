@@ -4,17 +4,17 @@ from .taximetria import *
 from datetime import datetime
 
 
-def load_stations(file: str):
+def load_stations1(file: str):
     df = pd.read_excel(file)
     df['obj'] = df.apply(lambda p: Point(p['station'],
                                          p['X'],
                                          p['Y'],
                                          p['Z']), axis=1)
 
-    df = df[['station', 'obj']].copy(deep=True)
     df.set_index('station', drop=True, inplace=True)
+    s = df['obj'].copy(deep=True)
 
-    return df
+    return s
 
 
 class SurveyProject:
