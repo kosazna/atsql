@@ -16,7 +16,7 @@ class Point:
         self.z = z
 
     def __repr__(self) -> str:
-        return f"{self.name:<6}({self.x:<11.4f},{self.y:<12.4f},{self.z:<8.4f})"
+        return f"{self.name:<6}({self.x:<10.3f},{self.y:<11.3f},{self.z:<7.3f})"
 
     @property
     def cords(self):
@@ -85,12 +85,13 @@ def mean_dh_signed(original, mean):
 def traverse_azimuth(measurements: pd.DataFrame, a_start: float):
     hold = a_start
     for i in measurements.itertuples():
-        _a = hold + i.h_angle + 200
+        _a = hold + i.h_angle_fixed + 200
         if _a > 400:
-            a = _a % 400
+            a = round(_a % 400, 6)
         else:
-            a = _a
+            a = round(_a, 6)
         hold = a
+
         measurements.loc[i.Index, 'azimuth'] = a
 
 

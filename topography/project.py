@@ -59,8 +59,6 @@ class SurveyProject:
                                   start=self.point2obj(traverse.start))
 
             tr.compute()
-            self.data.append(tr.odeusi)
-            # tr.export()
             print(tr)
 
     def compute_taximetria(self):
