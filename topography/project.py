@@ -56,14 +56,16 @@ class SurveyProject:
     def point2obj(self, points: list) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
 
-    def station2obj(self, stations):
-        df = stations.copy()
-        df['obj'] = df.apply(lambda p: Point(p.index,
+    def station2obj(self):
+        df = self.staseis.copy().reset_index()
+        df['obj'] = df.apply(lambda p: Point(p['station'],
                                              p['X'],
                                              p['Y'],
                                              p['Z']), axis=1)
 
-        return self.stations.append(df['obj']).drop_duplicates(inplace=True)
+        df.set_index('station', drop=True, inplace=True)
+
+        self.stations = df['obj'].copy(deep=True)
 
     def prepare_data(self):
         self.t_list['stations'] = self.t_list['stations'].str.split('-')
@@ -93,13 +95,11 @@ class SurveyProject:
 
             tr.compute()
 
-            self.staseis = self.staseis.append(tr.stations).drop_duplicates(
-                inplace=True)
-            self.stations = self.station2obj(tr.stations)
-
+            self.staseis = self.staseis.append(tr.stations).drop_duplicates()
             print(tr)
-
             tr.export()
+
+        self.station2obj()
 
     def compute_taximetria(self):
         pass
