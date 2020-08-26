@@ -17,6 +17,7 @@ class OpenTraverse:
         self.f1 = start[0] if start else None
         self.f2 = start[1] if start else None
         self.a_start = self.f1.azimuth(self.f2)
+        self.stations = None
         self.odeusi = pd.merge(pd.DataFrame(
             list(zip(fmt_angle(stops), fmt_dist(stops))),
             columns=['angle', 'distance']), self.metriseis, on='angle',
@@ -128,6 +129,10 @@ class OpenTraverse:
                 hold_z = hold_z + hold_dz
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
+        self.stations = self.odeusi.copy()[
+            ['station', 'X', 'Y', 'Z']].set_index(
+            'station')
+
     def export(self):
         file_to_export = self.odeusi.copy()
 
@@ -140,10 +145,7 @@ class OpenTraverse:
         file_to_export.round(4).to_excel(_dir.joinpath(f'T_{name}.xlsx'),
                                          index=False)
 
-        file_to_export = file_to_export[['station', 'X', 'Y', 'Z']].set_index(
-            'station')
-
-        file_to_export.round(4).to_excel(_dir.joinpath(f'S_{name}.xlsx'))
+        self.stations.round(4).to_excel(_dir.joinpath(f'S_{name}.xlsx'))
 
 
 class LinkTraverse(OpenTraverse):
@@ -331,6 +333,10 @@ class LinkTraverse(OpenTraverse):
                 hold_z = hold_z + hold_dz
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
+        self.stations = self.odeusi.copy()[
+            ['station', 'X', 'Y', 'Z']].set_index(
+            'station')
+
 
 class ClosedTraverse(OpenTraverse):
     def __init__(self, stops: list,
@@ -499,3 +505,7 @@ class ClosedTraverse(OpenTraverse):
                 hold_y = hold_y + hold_dy
                 hold_z = hold_z + hold_dz
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
+
+        self.stations = self.odeusi.copy()[
+            ['station', 'X', 'Y', 'Z']].set_index(
+            'station')
