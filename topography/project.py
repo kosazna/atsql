@@ -11,23 +11,6 @@ def _load(data):
     return data
 
 
-# def station2series(data: (str, pd.DataFrame)):
-#     if isinstance(data, str):
-#         df = pd.read_excel(data)
-#     else:
-#         df = data.copy()
-#
-#     df['obj'] = df.apply(lambda p: Point(p['station'],
-#                                          p['X'],
-#                                          p['Y'],
-#                                          p['Z']), axis=1)
-#
-#     df.set_index('station', drop=True, inplace=True)
-#     s = df['obj'].copy(deep=True)
-#
-#     return s
-
-
 def extract_workind_dir(data):
     if isinstance(data, str):
         _path = Path(data)
