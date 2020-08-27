@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from .traverse import *
 from .taximetria import *
+from .data import *
 from datetime import datetime
 
 
@@ -10,21 +11,21 @@ def _load(data):
     return data
 
 
-def station2series(data: (str, pd.DataFrame)):
-    if isinstance(data, str):
-        df = pd.read_excel(data)
-    else:
-        df = data
-
-    df['obj'] = df.apply(lambda p: Point(p['station'],
-                                         p['X'],
-                                         p['Y'],
-                                         p['Z']), axis=1)
-
-    df.set_index('station', drop=True, inplace=True)
-    s = df['obj'].copy(deep=True)
-
-    return s
+# def station2series(data: (str, pd.DataFrame)):
+#     if isinstance(data, str):
+#         df = pd.read_excel(data)
+#     else:
+#         df = data.copy()
+#
+#     df['obj'] = df.apply(lambda p: Point(p['station'],
+#                                          p['X'],
+#                                          p['Y'],
+#                                          p['Z']), axis=1)
+#
+#     df.set_index('station', drop=True, inplace=True)
+#     s = df['obj'].copy(deep=True)
+#
+#     return s
 
 
 def extract_workind_dir(data):
@@ -48,24 +49,13 @@ class SurveyProject:
         self.t_data = _load(traverse_data)
         self.s_data = _load(sideshot_data)
         self.t_list = _load(traverses)
-        self.stations = station2series(_load(stations))
-        self.staseis = _load(stations).set_index('station', drop=True)
+        self.stations = Container(stations)
+        self.sideshots = Container(stations)
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
 
     def point2obj(self, points: list) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
-
-    def station2obj(self):
-        df = self.staseis.copy().reset_index()
-        df['obj'] = df.apply(lambda p: Point(p['station'],
-                                             p['X'],
-                                             p['Y'],
-                                             p['Z']), axis=1)
-
-        df.set_index('station', drop=True, inplace=True)
-
-        self.stations = df['obj'].copy(deep=True)
 
     def prepare_data(self):
         self.t_list['stations'] = self.t_list['stations'].str.split('-')
@@ -95,11 +85,9 @@ class SurveyProject:
 
             tr.compute()
 
-            self.staseis = self.staseis.append(tr.stations).drop_duplicates()
+            self.stations.update(tr.stations)
             print(tr)
             tr.export()
-
-        self.station2obj()
 
     def compute_taximetria(self):
         pass
