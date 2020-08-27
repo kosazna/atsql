@@ -8,6 +8,7 @@ class Sideshot:
                  station: Point = None,
                  bs: Point = None):
         self.tm = data.copy()
+        self.points = None
         self.station = station
         self.bs = bs
         self.a = station.azimuth(bs)
@@ -40,3 +41,8 @@ class Sideshot:
                               self.tm['v_angle'],
                               self.tm['station_h'],
                               self.tm['target_h'])
+
+        self.tm['station'] = self.tm['fs']
+
+        self.points = self.tm.copy()[['station', 'X', 'Y', 'Z']].set_index(
+            'station')

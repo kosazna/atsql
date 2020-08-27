@@ -30,7 +30,10 @@ def _load(data):
 
 def extract_workind_dir(data):
     if isinstance(data, str):
-        return Path(data).parent
+        _path = Path(data)
+        return _path if _path.is_dir() else _path.parent
+    elif isinstance(data, Path):
+        return data if data.is_dir() else data.parent
     else:
         raise IsADirectoryError("""Working directory can't be infered from data.
         Provide 'working_dir' when instantiating the class SurveyProject.""")
@@ -54,7 +57,7 @@ class SurveyProject:
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
 
-    def point2obj(self, points: list) -> List[Point]:
+    def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
 
     def prepare_data(self):
@@ -90,4 +93,17 @@ class SurveyProject:
             tr.export()
 
     def compute_taximetria(self):
-        pass
+        self.sideshots.update(self.stations.display())
+
+        point_groups = self.s_data.groupby(['station', 'bs'])
+
+        for group in point_groups.groups:
+            if group[0] in self.stations.data.index and \
+                    group[1] in self.stations.data.index:
+                _data = point_groups.get_group(group)
+                ss = Sideshot(_data,
+                              self.stations[group[0]],
+                              self.stations[group[1]])
+
+                ss.compute()
+                self.sideshots.update(ss.points)

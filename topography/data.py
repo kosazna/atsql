@@ -2,7 +2,7 @@
 from .computation import *
 
 
-def station2series(data: (str, pd.DataFrame)):
+def transform_split(data: (str, pd.DataFrame)):
     if isinstance(data, str):
         df = pd.read_excel(data)
     else:
@@ -21,13 +21,17 @@ def station2series(data: (str, pd.DataFrame)):
 
 class Container:
     def __init__(self, data: (str, pd.DataFrame)):
-        self.data, self.series = station2series(data)
+        self.data, self.series = transform_split(data)
 
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, key):
-        return self.series[key]
+        try:
+            return self.series[key]
+        except KeyError:
+            print(f"[ERROR] - Point doesn't exist: [{key}]")
+            return Point('ExceptionPoint', np.nan, np.nan, np.nan)
 
     def __setitem__(self, key, value):
         self.series[key] = value
@@ -48,7 +52,7 @@ class Container:
 
         _final = _original.append(_new).drop_duplicates(subset='station')
 
-        self.data, self.series = station2series(_final)
+        self.data, self.series = transform_split(_final)
 
     def display(self):
         keep = ['X', 'Y', 'Z']
