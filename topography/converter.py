@@ -6,7 +6,7 @@ class NikonRawConverter:
     def __init__(self, file: str = None):
         self.working_dir = Path(file).parent
         self.basename = Path(file).stem
-        self.converted_file_for_formatter = None
+        self.output = self.working_dir.joinpath(f'{self.basename}.xlsx')
         self.raw = pd.read_csv(file, skiprows=1, names=range(7), header=None)
         self.cleaned = None
         self.staseis = None
@@ -88,36 +88,28 @@ class NikonRawConverter:
         self.stats['sunola'] = self.stats['fs'].cumsum()
 
     def export(self):
-        _dir = self.working_dir.joinpath('RAW_Processed')
+        with pd.ExcelWriter(self.output) as writer:
+            self.cleaned.to_excel(writer, sheet_name=f'RAW_cleaned',
+                                  index=False)
 
-        if not _dir.exists():
-            _dir.mkdir()
+            self.final.to_excel(writer, sheet_name=f'All', index=False)
 
-        self.cleaned.to_excel(
-            _dir.joinpath(f'RAW_{self.basename}_cleaned.xlsx'),
-            index=False)
+            self.staseis.to_excel(writer, sheet_name=f'Staseis', index=False)
 
-        self.final.to_excel(_dir.joinpath(f'metriseis_{self.basename}.xlsx'),
-                            index=False)
+            self.taximetrika.to_excel(writer, sheet_name=f'Taximetrika',
+                                      index=False)
 
-        self.converted_file_for_formatter = _dir.joinpath(
-            f'staseis_{self.basename}.xlsx')
-
-        self.staseis.to_excel(self.converted_file_for_formatter,
-                              index=False)
-
-        self.taximetrika.to_excel(
-            _dir.joinpath(f'taximetrika_{self.basename}.xlsx'), index=False)
-
-        self.stats.to_excel(_dir.joinpath(f'statistics_{self.basename}.xlsx'),
-                            index=False)
+            self.stats.to_excel(writer, sheet_name=f'Statistics',
+                                index=False)
 
 
 class TraverseFormatter:
-    def __init__(self, file: (str, Path) = None):
-        self.working_dir = Path(file).parent.parent
+    def __init__(self, file: (str, Path) = None, sheet_name: str = 'Staseis'):
+        self.working_dir = Path(file).parent
         self.basename = Path(file).stem
-        self.df = pd.read_excel(file)
+        self.output = self.working_dir.joinpath(
+            f'{self.basename}_Transformed.xlsx')
+        self.df = pd.read_excel(file, sheet_name=sheet_name)
         self.final = None
         self.odeusi = None
 
@@ -163,13 +155,10 @@ class TraverseFormatter:
                                       'dz_temp', ]].copy()
 
     def export(self):
-        _dir = self.working_dir.joinpath('RAW_Transformed')
+        with pd.ExcelWriter(self.output) as writer:
+            self.odeusi.round(6).to_excel(writer,
+                                          sheet_name='Traverse_Measurements',
+                                          index=False)
 
-        if not _dir.exists():
-            _dir.mkdir()
-
-        self.final.to_excel(_dir.joinpath(f'{self.basename}_Processed.xlsx'),
-                            index=False)
-
-        self.odeusi.to_excel(_dir.joinpath('Traverse_Measurements.xlsx'),
-                             index=False)
+            self.final.round(6).to_excel(writer, sheet_name='Processed_Data',
+                                         index=False)

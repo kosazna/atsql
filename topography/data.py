@@ -36,16 +36,6 @@ class Container:
     def __setitem__(self, key, value):
         self.series[key] = value
 
-    def __repr__(self):
-        pass
-
-    # def __add__(self, other: pd.DataFrame):
-    #     self.data = self.data.reset_index().append(
-    #         other.reset_index(drop=True)).drop_duplicates(
-    #         subset='station').set_index('station', drop=True)
-    #
-    #     self.series = self.data['obj']
-
     def update(self, other_data: pd.DataFrame):
         _original = self.data.copy(deep=True).reset_index()
         _new = other_data.copy().reset_index()

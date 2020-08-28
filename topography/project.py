@@ -5,9 +5,10 @@ from .data import *
 from datetime import datetime
 
 
-def _load(data):
+def _load(data, sheet_name: str = None):
     if isinstance(data, str):
-        return pd.read_excel(data)
+        _sheet = 0 if sheet_name is None else sheet_name
+        return pd.read_excel(data, sheet_name=_sheet)
     return data
 
 
@@ -32,8 +33,8 @@ class SurveyProject:
                  working_dir: (str, Path) = None):
         self.name = name
         self.time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-        self.t_data = _load(traverse_data)
-        self.s_data = _load(sideshot_data)
+        self.t_data = _load(traverse_data, sheet_name='Traverse_Measurements')
+        self.s_data = _load(sideshot_data, sheet_name='Taximetrika')
         self.t_list = _load(traverses)
         self.stations = Container(stations)
         self.sideshots = Container(stations)

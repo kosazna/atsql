@@ -27,8 +27,8 @@ class OpenTraverse:
     def from_excel(cls, file: (str, Path),
                    stops: list,
                    start: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = Path(file).parent.parent
+        data = pd.read_excel(file, sheet_name='Traverse_Measurements')
+        working_dir = Path(file).parent
         return cls(stops, data, start, working_dir)
 
     @property
@@ -169,8 +169,8 @@ class LinkTraverse(OpenTraverse):
                    stops: list,
                    start: List[Point] = None,
                    finish: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = Path(file).parent.parent
+        data = pd.read_excel(file, sheet_name='Traverse_Measurements')
+        working_dir = Path(file).parent
         return cls(stops, data, start, finish, working_dir)
 
     @property
@@ -354,8 +354,8 @@ class ClosedTraverse(OpenTraverse):
     def from_excel(cls, file: (str, Path),
                    stops: list,
                    start: List[Point] = None):
-        data = pd.read_excel(file)
-        working_dir = Path(file).parent.parent
+        data = pd.read_excel(file, sheet_name='Traverse_Measurements')
+        working_dir = Path(file).parent
         return cls(stops, data, start, working_dir)
 
     @property
