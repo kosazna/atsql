@@ -77,13 +77,12 @@ class SurveyProject:
             tr.export()
 
     def compute_taximetria(self):
-        self.sideshots.update(self.stations.display())
+        self.sideshots.update(self.stations())
 
         point_groups = self.s_data.groupby(['station', 'bs'])
 
         for group in point_groups.groups:
-            if group[0] in self.stations.data.index and \
-                    group[1] in self.stations.data.index:
+            if group in self.stations:
                 _data = point_groups.get_group(group)
                 ss = Sideshot(_data,
                               self.stations[group[0]],
