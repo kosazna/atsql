@@ -56,3 +56,4 @@ class Container:
         _final = _original.append(_new).drop_duplicates(subset='station')
 
         self._data, self._series = transform_split(_final)
+
