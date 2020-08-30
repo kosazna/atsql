@@ -38,8 +38,9 @@ class SurveyProject:
         self.sideshots = Container(self.stations.data)
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
-        self.computed_traverses: List = []
+        self.computed_traverses = []
         self.computed_traverses_count = 0
+        self.computed_traverses_info = None
 
     def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
@@ -74,12 +75,19 @@ class SurveyProject:
 
             self.computed_traverses.append(tr)
 
-            print(tr)
+            if self.computed_traverses_info is not None:
+                self.computed_traverses_info = \
+                    self.computed_traverses_info.append(
+                        tr.info.T.copy()).reset_index(drop=True)
+            else:
+                self.computed_traverses_info = tr.info.T.copy()
 
         self.stations = self.stations + sum(
             [trav.stations for trav in self.computed_traverses])
 
         self.computed_traverses_count = len(self.computed_traverses)
+
+        return self.computed_traverses_info
 
     def export_traverses(self):
         _out = self.working_dir.joinpath('Project_Traverses.xlsx')

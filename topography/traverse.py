@@ -8,9 +8,9 @@ class OpenTraverse:
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
                  working_dir: (str, Path) = None):
-        self.working_dir = working_dir
+        self.name = '-'.join(stops)
         self.stops = stops
-        self.stops_count = len(stops)
+        self.stops_count = len(stops) - 1
         self.length = 0
         self.metriseis = data.copy()
         self.f1 = start[0] if start else None
@@ -21,6 +21,8 @@ class OpenTraverse:
             list(zip(fmt_angle(stops), fmt_dist(stops))),
             columns=['angle', 'distance']), self.metriseis, on='angle',
             how='left')
+
+        self.working_dir = working_dir
 
     @classmethod
     def from_excel(cls, file: (str, Path),
@@ -37,6 +39,20 @@ class OpenTraverse:
     @property
     def k(self):
         return round8(calc_k(self.f2.x, self.f1.x))
+
+    @property
+    def info(self):
+        io = pd.DataFrame.from_dict(
+            {'traverse': self.name,
+             'stations': self.stops_count,
+             'length': self.length,
+             'mean_elev': self.mean_elevation,
+             'angular': np.nan,
+             'horizontal': np.nan,
+             'wx': np.nan,
+             'wy': np.nan,
+             'wz': np.nan}, orient='index')
+        return io
 
     def __repr__(self):
         msg = f"""
@@ -154,6 +170,7 @@ class LinkTraverse(OpenTraverse):
 
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
+        self.stops_count = len(stops) - 2
         self.l1 = finish[0] if finish else None
         self.l2 = finish[1] if finish else None
         self.a_finish = self.l1.azimuth(self.l2)
@@ -226,6 +243,20 @@ class LinkTraverse(OpenTraverse):
             return self.wz / self.length
         except ZeroDivisionError:
             return 0
+
+    @property
+    def info(self):
+        io = pd.DataFrame.from_dict(
+            {'traverse': self.name,
+             'stations': self.stops_count,
+             'length': self.length,
+             'mean_elev': self.mean_elevation,
+             'angular': self.angular_misclosure,
+             'horizontal': self.horizontal_misclosure,
+             'wx': self.wx,
+             'wy': self.wy,
+             'wz': self.wz}, orient='index')
+        return io
 
     def __repr__(self):
         msg = f"""
@@ -340,6 +371,7 @@ class ClosedTraverse(OpenTraverse):
                  working_dir: (str, Path) = '.'):
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
+        self.stops_count = len(stops) - 3
         self.a_finish = self.f2.azimuth(self.f1)
         self._l1_temp_x = 0
         self._l1_temp_y = 0
@@ -401,6 +433,20 @@ class ClosedTraverse(OpenTraverse):
             return self.wz / self.length
         except ZeroDivisionError:
             return 0
+
+    @property
+    def info(self):
+        io = pd.DataFrame.from_dict(
+            {'traverse': self.name,
+             'stations': self.stops_count,
+             'length': self.length,
+             'mean_elev': self.mean_elevation,
+             'angular': self.angular_misclosure,
+             'horizontal': self.horizontal_misclosure,
+             'wx': self.wx,
+             'wy': self.wy,
+             'wz': self.wz}, orient='index')
+        return io
 
     def __repr__(self):
         msg = f"""
