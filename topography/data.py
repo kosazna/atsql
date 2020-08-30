@@ -39,9 +39,9 @@ class Container:
     def __setitem__(self, key, value):
         self._series[key] = value
 
-    def __call__(self):
-        keep = ['X', 'Y', 'Z']
-        return self._data[keep].copy()
+    # def __call__(self):
+    #     keep = ['X', 'Y', 'Z']
+    #     return self._data[keep].copy()
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -51,7 +51,7 @@ class Container:
 
     def __add__(self, other):
         _original = self._data.copy(deep=True).reset_index()
-        _new = other().reset_index()
+        _new = other.data.reset_index()
 
         _final = _original.append(_new).drop_duplicates(subset='station')
 
@@ -66,11 +66,15 @@ class Container:
     def __iter__(self):
         return iter(self._series)
 
-    def update(self, other_data: pd.DataFrame):
+    @property
+    def data(self):
+        keep = ['X', 'Y', 'Z']
+        return self._data[keep].copy()
+
+    def update(self, other: pd.DataFrame):
         _original = self._data.copy(deep=True).reset_index()
-        _new = other_data.copy().reset_index()
+        _new = other.copy().reset_index()
 
         _final = _original.append(_new).drop_duplicates(subset='station')
 
         self._data, self._series = transform_split(_final)
-

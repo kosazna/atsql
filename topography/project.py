@@ -35,7 +35,7 @@ class SurveyProject:
         self.s_data = _load(sideshot_data, sheet_name='Taximetrika')
         self.t_list = _load(traverses, sheet_name='Traverses')
         self.stations = Container(_load(traverses, sheet_name='Known_Points'))
-        self.sideshots = Container(self.stations())
+        self.sideshots = Container(self.stations.data)
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
         self.computed_traverses: List = []
@@ -90,7 +90,7 @@ class SurveyProject:
                                                   sheet_name=str(i))
 
     def compute_taximetria(self):
-        self.sideshots.update(self.stations())
+        self.sideshots.update(self.stations.data)
 
         point_groups = self.s_data.groupby(['station', 'bs'])
 
