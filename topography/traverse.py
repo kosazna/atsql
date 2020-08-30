@@ -128,9 +128,7 @@ class OpenTraverse:
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
-        self.stations = self.odeusi.copy()[
-            ['station', 'X', 'Y', 'Z']].set_index(
-            'station')
+        self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])
 
     def export(self):
         file_to_export = self.odeusi.copy()
@@ -332,9 +330,7 @@ class LinkTraverse(OpenTraverse):
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
-        self.stations = self.odeusi.copy()[
-            ['station', 'X', 'Y', 'Z']].set_index(
-            'station')
+        self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])
 
 
 class ClosedTraverse(OpenTraverse):
@@ -505,6 +501,4 @@ class ClosedTraverse(OpenTraverse):
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
-        self.stations = self.odeusi.copy()[
-            ['station', 'X', 'Y', 'Z']].set_index(
-            'station')
+        self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])

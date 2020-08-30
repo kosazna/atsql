@@ -28,17 +28,18 @@ class SurveyProject:
                  traverse_data: (str, pd.DataFrame) = None,
                  sideshot_data: (str, pd.DataFrame) = None,
                  traverses: (str, pd.DataFrame) = None,
-                 stations: (str, pd.DataFrame) = None,
                  working_dir: (str, Path) = None):
         self.name = name
         self.time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
         self.t_data = _load(traverse_data, sheet_name='Traverse_Measurements')
         self.s_data = _load(sideshot_data, sheet_name='Taximetrika')
-        self.t_list = _load(traverses)
-        self.stations = Container(stations)
-        self.sideshots = Container(stations)
+        self.t_list = _load(traverses, sheet_name='Traverses')
+        self.stations = Container(_load(traverses, sheet_name='Known_Points'))
+        self.sideshots = Container(self.stations())
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
+        self.computed_traverses: List = []
+        self.computed_traverses_count = 0
 
     def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
@@ -71,9 +72,22 @@ class SurveyProject:
 
             tr.compute()
 
-            self.stations.update(tr.stations)
+            self.computed_traverses.append(tr)
+
             print(tr)
-            tr.export()
+
+        self.stations = self.stations + sum(
+            [trav.stations for trav in self.computed_traverses])
+
+        self.computed_traverses_count = len(self.computed_traverses)
+
+    def export_traverses(self):
+        _out = self.working_dir.joinpath('Project_Traverses.xlsx')
+        with pd.ExcelWriter(_out) as writer:
+            for i, traverse in enumerate(self.computed_traverses, 1):
+                traverse.odeusi.round(4).to_excel(writer,
+                                                  index=False,
+                                                  sheet_name=str(i))
 
     def compute_taximetria(self):
         self.sideshots.update(self.stations())

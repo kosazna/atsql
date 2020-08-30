@@ -49,6 +49,23 @@ class Container:
         elif isinstance(item, (list, tuple)):
             return all([i in self._data.index for i in item])
 
+    def __add__(self, other):
+        _original = self._data.copy(deep=True).reset_index()
+        _new = other().reset_index()
+
+        _final = _original.append(_new).drop_duplicates(subset='station')
+
+        return Container(_final)
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self.__add__(other)
+
+    def __iter__(self):
+        return iter(self._series)
+
     def update(self, other_data: pd.DataFrame):
         _original = self._data.copy(deep=True).reset_index()
         _new = other_data.copy().reset_index()
@@ -56,3 +73,4 @@ class Container:
         _final = _original.append(_new).drop_duplicates(subset='station')
 
         self._data, self._series = transform_split(_final)
+
