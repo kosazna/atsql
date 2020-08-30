@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from .traverse import *
 from .taximetria import *
-from .data import *
 from datetime import datetime
 
 

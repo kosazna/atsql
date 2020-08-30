@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .computation import *
+from .data import *
 
 
 class Sideshot:

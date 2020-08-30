@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import List
-from .computation import *
-from .misc import *
+from .data import *
 
 
 class OpenTraverse:
@@ -121,12 +120,12 @@ class OpenTraverse:
             if i.station == self.f2.name:
                 pass
             else:
-                self.odeusi.loc[i.Index, 'X'] = hold_x + hold_dx
-                self.odeusi.loc[i.Index, 'Y'] = hold_y + hold_dy
-                self.odeusi.loc[i.Index, 'Z'] = hold_z + hold_dz
                 hold_x = hold_x + hold_dx
                 hold_y = hold_y + hold_dy
                 hold_z = hold_z + hold_dz
+                self.odeusi.loc[i.Index, 'X'] = round8(hold_x)
+                self.odeusi.loc[i.Index, 'Y'] = round8(hold_y)
+                self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
         self.stations = self.odeusi.copy()[
@@ -325,12 +324,12 @@ class LinkTraverse(OpenTraverse):
                 self.odeusi.loc[i.Index, 'Y'] = self.l1.y
                 self.odeusi.loc[i.Index, 'Z'] = self.l1.z
             else:
-                self.odeusi.loc[i.Index, 'X'] = hold_x + hold_dx
-                self.odeusi.loc[i.Index, 'Y'] = hold_y + hold_dy
-                self.odeusi.loc[i.Index, 'Z'] = hold_z + hold_dz
                 hold_x = hold_x + hold_dx
                 hold_y = hold_y + hold_dy
                 hold_z = hold_z + hold_dz
+                self.odeusi.loc[i.Index, 'X'] = round8(hold_x)
+                self.odeusi.loc[i.Index, 'Y'] = round8(hold_y)
+                self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
         self.stations = self.odeusi.copy()[
@@ -498,12 +497,12 @@ class ClosedTraverse(OpenTraverse):
             if i.station == self.f2.name:
                 pass
             else:
-                self.odeusi.loc[i.Index, 'X'] = hold_x + hold_dx
-                self.odeusi.loc[i.Index, 'Y'] = hold_y + hold_dy
-                self.odeusi.loc[i.Index, 'Z'] = hold_z + hold_dz
                 hold_x = hold_x + hold_dx
                 hold_y = hold_y + hold_dy
                 hold_z = hold_z + hold_dz
+                self.odeusi.loc[i.Index, 'X'] = round8(hold_x)
+                self.odeusi.loc[i.Index, 'Y'] = round8(hold_y)
+                self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
         self.stations = self.odeusi.copy()[
