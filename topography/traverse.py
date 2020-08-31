@@ -77,11 +77,13 @@ class OpenTraverse:
                    angle not in self.metriseis['angle'].values]
 
         if missing:
-            print(f"[ERROR] - Traverse {self.name} can't be computed\n")
+            print(
+                f"\n[ERROR] - Traverse can't be computed:\n  -> {self.name}\n")
             print("Missing angles from measurements:")
             for i in missing:
-                print(f'  [{i}]')
-                return False
+                print(f'  -> ({i})')
+            print('=' * 80, end='\n')
+            return False
         return True
 
     def compute(self):

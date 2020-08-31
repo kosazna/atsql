@@ -22,6 +22,11 @@ def extract_workind_dir(data):
         Provide 'working_dir' when instantiating the class SurveyProject.""")
 
 
+def styler(data: pd.DataFrame, formatter: dict):
+    return data.style.format(formatter).apply(warning,
+                                              subset=['angular', 'horizontal'])
+
+
 class SurveyProject:
     def __init__(self,
                  name: str = None,
@@ -116,7 +121,7 @@ class SurveyProject:
 
         self.computed_traverses_count = len(self.computed_traverses)
 
-        return self.computed_traverses_info.style.format(traverse_formatter)
+        return styler(self.computed_traverses_info, traverse_formatter)
 
     def export_traverses(self):
         _out = self.working_dir.joinpath('Project_Traverses.xlsx')
@@ -142,4 +147,7 @@ class SurveyProject:
                 self.computed_sideshots.append(ss)
 
         self.sideshots = sum([s.points for s in self.computed_sideshots])
+        self.sideshots.sort()
         self.computed_sideshots_count = len(self.sideshots)
+
+        print(f"[{self.computed_sideshots_count}] points were calculated.")

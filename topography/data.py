@@ -41,14 +41,14 @@ class Container:
         try:
             return self._series[key]
         except KeyError:
-            print(f"[ERROR] - Point doesn't exist: [{key}]")
+            print(f"\n[ERROR] - Point doesn't exist: [{key}]\n")
             return Point('ExceptionPoint', np.nan, np.nan, np.nan)
 
     def __setitem__(self, key, value):
         self._series[key] = value
 
-    def __call__(self):
-        self._data, self._series = transform_split(self._data.sort_index())
+    # def __call__(self):
+    #     self._data, self._series = transform_split(self._data.sort_index())
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -77,6 +77,9 @@ class Container:
     def data(self):
         keep = ['X', 'Y', 'Z']
         return self._data[keep].copy()
+
+    def sort(self):
+        self._data, self._series = transform_split(self._data.sort_index())
 
     def update(self, other: pd.DataFrame):
         _original = self._data.copy(deep=True).reset_index()
