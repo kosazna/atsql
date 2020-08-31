@@ -1,20 +1,28 @@
 # -*- coding: utf-8 -*-
 from .computation import *
+from .congif import *
 
 
+# noinspection PyTypeChecker
 def transform_split(data: (str, pd.DataFrame)):
-    if isinstance(data, str):
-        df = pd.read_excel(data)
+    if data is None:
+        df = pd.DataFrame(columns=['station', 'X', 'Y', 'Z'])
     else:
-        df = data.copy()
+        if isinstance(data, str):
+            df = pd.read_excel(data)
+        else:
+            df = data.copy()
 
     if df.index.name == 'station':
         df.reset_index(inplace=True)
 
-    df['obj'] = df.apply(lambda p: Point(p['station'],
-                                         p['X'],
-                                         p['Y'],
-                                         p['Z']), axis=1)
+    if not df.empty:
+        df['obj'] = df.apply(lambda p: Point(p['station'],
+                                             p['X'],
+                                             p['Y'],
+                                             p['Z']), axis=1)
+    else:
+        df['obj'] = None
 
     df.set_index('station', drop=True, inplace=True)
     s = df['obj'].copy(deep=True)
@@ -23,7 +31,7 @@ def transform_split(data: (str, pd.DataFrame)):
 
 
 class Container:
-    def __init__(self, data: (str, pd.DataFrame)):
+    def __init__(self, data: (str, pd.DataFrame) = None):
         self._data, self._series = transform_split(data)
 
     def __len__(self):
@@ -39,9 +47,8 @@ class Container:
     def __setitem__(self, key, value):
         self._series[key] = value
 
-    # def __call__(self):
-    #     keep = ['X', 'Y', 'Z']
-    #     return self._data[keep].copy()
+    def __call__(self):
+        self._data, self._series = transform_split(self._data.sort_index())
 
     def __contains__(self, item):
         if isinstance(item, str):

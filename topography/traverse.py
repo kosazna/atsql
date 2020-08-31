@@ -17,12 +17,14 @@ class OpenTraverse:
         self.f2 = start[1] if start else None
         self.a_start = self.f1.azimuth(self.f2)
         self.stations = None
+        self.metrics = None
         self.odeusi = pd.merge(pd.DataFrame(
             list(zip(fmt_angle(stops), fmt_dist(stops))),
             columns=['angle', 'distance']), self.metriseis, on='angle',
             how='left')
 
         self.working_dir = working_dir
+        # self.is_validated = OpenTraverse.validate(self)
 
     @classmethod
     def from_excel(cls, file: (str, Path),
@@ -43,16 +45,17 @@ class OpenTraverse:
     @property
     def info(self):
         io = pd.DataFrame.from_dict(
-            {'traverse': self.name,
-             'stations': self.stops_count,
-             'length': self.length,
-             'mean_elev': self.mean_elevation,
-             'angular': np.nan,
-             'horizontal': np.nan,
-             'wx': np.nan,
-             'wy': np.nan,
-             'wz': np.nan}, orient='index')
-        return io
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [np.nan],
+             'horizontal': [np.nan],
+             'wx': [np.nan],
+             'wy': [np.nan],
+             'wz': [np.nan]}, orient='index')
+
+        return io.style.format(traverse_formatter)
 
     def __repr__(self):
         msg = f"""
@@ -63,6 +66,19 @@ class OpenTraverse:
             α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g"""
 
         return msg
+
+    def validate(self):
+        needed_angles = fmt_angle(self.stops)
+        missing = [angle for angle in needed_angles if
+                   angle not in self.metriseis['angle'].values]
+
+        if missing:
+            print(f"[ERROR] - Traverse {self.name} can't be computed\n")
+            print("Missing angles from measurements:")
+            for i in missing:
+                print(f'  [{i}]')
+                return False
+        return True
 
     def compute(self):
         self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan
@@ -143,6 +159,17 @@ class OpenTraverse:
                 self.odeusi.loc[i.Index, 'Y'] = round8(hold_y)
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
+
+        self.metrics = pd.DataFrame.from_dict(
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [np.nan],
+             'horizontal': [np.nan],
+             'wx': [np.nan],
+             'wy': [np.nan],
+             'wz': [np.nan]}, orient='index')
 
         self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])
 
@@ -247,16 +274,17 @@ class LinkTraverse(OpenTraverse):
     @property
     def info(self):
         io = pd.DataFrame.from_dict(
-            {'traverse': self.name,
-             'stations': self.stops_count,
-             'length': self.length,
-             'mean_elev': self.mean_elevation,
-             'angular': self.angular_misclosure,
-             'horizontal': self.horizontal_misclosure,
-             'wx': self.wx,
-             'wy': self.wy,
-             'wz': self.wz}, orient='index')
-        return io
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [self.angular_misclosure],
+             'horizontal': [self.horizontal_misclosure],
+             'wx': [self.wx],
+             'wy': [self.wy],
+             'wz': [self.wz]})
+
+        return io.style.format(traverse_formatter)
 
     def __repr__(self):
         msg = f"""
@@ -361,6 +389,17 @@ class LinkTraverse(OpenTraverse):
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
 
+        self.metrics = pd.DataFrame.from_dict(
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [self.angular_misclosure],
+             'horizontal': [self.horizontal_misclosure],
+             'wx': [self.wx],
+             'wy': [self.wy],
+             'wz': [self.wz]})
+
         self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])
 
 
@@ -437,16 +476,17 @@ class ClosedTraverse(OpenTraverse):
     @property
     def info(self):
         io = pd.DataFrame.from_dict(
-            {'traverse': self.name,
-             'stations': self.stops_count,
-             'length': self.length,
-             'mean_elev': self.mean_elevation,
-             'angular': self.angular_misclosure,
-             'horizontal': self.horizontal_misclosure,
-             'wx': self.wx,
-             'wy': self.wy,
-             'wz': self.wz}, orient='index')
-        return io
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [self.angular_misclosure],
+             'horizontal': [self.horizontal_misclosure],
+             'wx': [self.wx],
+             'wy': [self.wy],
+             'wz': [self.wz]}, orient='index')
+
+        return io.style.format(traverse_formatter)
 
     def __repr__(self):
         msg = f"""
@@ -546,5 +586,16 @@ class ClosedTraverse(OpenTraverse):
                 self.odeusi.loc[i.Index, 'Y'] = round8(hold_y)
                 self.odeusi.loc[i.Index, 'Z'] = round8(hold_z)
                 hold_dx, hold_dy, hold_dz = i.dX, i.dY, i.dZ
+
+        self.metrics = pd.DataFrame.from_dict(
+            {'traverse': [self.name],
+             'stations': [self.stops_count],
+             'length': [self.length],
+             'mean_elev': [self.mean_elevation],
+             'angular': [self.angular_misclosure],
+             'horizontal': [self.horizontal_misclosure],
+             'wx': [self.wx],
+             'wy': [self.wy],
+             'wz': [self.wz]}, orient='index')
 
         self.stations = Container(self.odeusi[['station', 'X', 'Y', 'Z']])

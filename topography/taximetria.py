@@ -44,5 +44,4 @@ class Sideshot:
 
         self.tm['station'] = self.tm['fs']
 
-        self.points = self.tm.copy()[['station', 'X', 'Y', 'Z']].set_index(
-            'station')
+        self.points = Container(self.tm[['station', 'X', 'Y', 'Z']])

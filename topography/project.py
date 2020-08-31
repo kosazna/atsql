@@ -28,19 +28,43 @@ class SurveyProject:
                  traverse_data: (str, pd.DataFrame) = None,
                  sideshot_data: (str, pd.DataFrame) = None,
                  traverses: (str, pd.DataFrame) = None,
+                 known_points: (str, pd.DataFrame) = None,
                  working_dir: (str, Path) = None):
         self.name = name
         self.time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-        self.t_data = _load(traverse_data, sheet_name='Traverse_Measurements')
-        self.s_data = _load(sideshot_data, sheet_name='Taximetrika')
-        self.t_list = _load(traverses, sheet_name='Traverses')
-        self.stations = Container(_load(traverses, sheet_name='Known_Points'))
-        self.sideshots = Container(self.stations.data)
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
+
+        self.t_data = _load(traverse_data)
+        self.s_data = _load(sideshot_data)
+        self.t_list = _load(traverses)
+
+        self.stations = Container(_load(known_points))
+        self.sideshots = Container()
+
         self.computed_traverses = []
         self.computed_traverses_count = 0
         self.computed_traverses_info = None
+        self.computed_sideshots = []
+        self.computed_sideshots_count = 0
+
+    @classmethod
+    def from_single_file(cls, file):
+        _path = Path(file)
+        _name = _path.stem
+        _all_data = pd.ExcelFile(_path)
+        _traverse_data = _all_data.parse('Traverse_Measurements')
+        _sideshot_data = _all_data.parse('Taximetrika')
+        _traverses = _all_data.parse('Traverses')
+        _known_points = _all_data.parse('Known_Points')
+        _working_dir = _path.parent
+
+        return cls(name=_name,
+                   traverse_data=_traverse_data,
+                   sideshot_data=_sideshot_data,
+                   traverses=_traverses,
+                   known_points=_known_points,
+                   working_dir=_working_dir)
 
     def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
@@ -78,16 +102,16 @@ class SurveyProject:
             if self.computed_traverses_info is not None:
                 self.computed_traverses_info = \
                     self.computed_traverses_info.append(
-                        tr.info.T.copy()).reset_index(drop=True)
+                        tr.metrics.copy()).reset_index(drop=True)
             else:
-                self.computed_traverses_info = tr.info.T.copy()
+                self.computed_traverses_info = tr.metrics.copy()
 
         self.stations = self.stations + sum(
             [trav.stations for trav in self.computed_traverses])
 
         self.computed_traverses_count = len(self.computed_traverses)
 
-        return self.computed_traverses_info
+        return self.computed_traverses_info.style.format(traverse_formatter)
 
     def export_traverses(self):
         _out = self.working_dir.joinpath('Project_Traverses.xlsx')
@@ -98,8 +122,6 @@ class SurveyProject:
                                                   sheet_name=str(i))
 
     def compute_taximetria(self):
-        self.sideshots.update(self.stations.data)
-
         point_groups = self.s_data.groupby(['station', 'bs'])
 
         for group in point_groups.groups:
@@ -110,4 +132,8 @@ class SurveyProject:
                               self.stations[group[1]])
 
                 ss.compute()
-                self.sideshots.update(ss.points)
+                self.computed_sideshots.append(ss)
+
+        self.sideshots = sum([s.points for s in self.computed_sideshots])
+        self.sideshots
+        self.computed_sideshots_count = len(self.sideshots)
