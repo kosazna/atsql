@@ -7,13 +7,16 @@ class Sideshot:
                  data: pd.DataFrame,
                  station: Point = None,
                  bs: Point = None):
+
         self.tm = data.copy()
-        self.points = None
-        self.station = station
+
         self.bs = bs
+        self.station = station
         self.a = station.azimuth(bs)
         self.mean_elevation = round((self.station.z + self.bs.z) / 2, 3)
         self.k = calc_k(station.x, bs.x)
+
+        self.points = None
 
     def compute(self):
         self.tm['h_dist'] = slope_to_hor(self.tm['slope_dist'],

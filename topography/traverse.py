@@ -8,22 +8,26 @@ class OpenTraverse:
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
                  working_dir: (str, Path) = None):
+
         self.name = '-'.join(stops)
+        self.working_dir = working_dir
+
         self.stops = stops
         self.stops_count = len(stops) - 1
         self.length = 0
-        self.metriseis = data.copy()
         self.f1 = start[0] if start else None
         self.f2 = start[1] if start else None
         self.a_start = self.f1.azimuth(self.f2)
-        self.stations = None
-        self.metrics = None
+
+        self.metriseis = data.copy()
         self.odeusi = pd.merge(pd.DataFrame(
             list(zip(fmt_angle(stops), fmt_dist(stops))),
             columns=['angle', 'distance']), self.metriseis, on='angle',
             how='left')
 
-        self.working_dir = working_dir
+        self.stations = None
+        self.metrics = None
+
         # self.is_validated = OpenTraverse.validate(self)
 
     @classmethod
@@ -33,6 +37,16 @@ class OpenTraverse:
         data = pd.read_excel(file, sheet_name='Traverse_Measurements')
         working_dir = Path(file).parent
         return cls(stops, data, start, working_dir)
+
+    def __repr__(self):
+        msg = f"""
+            Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
+            Traverse length: {self.length:.3f} m
+            Mean Elevation: {self.mean_elevation} m
+            k: {self.k:.4f}\n
+            α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g"""
+
+        return msg
 
     @property
     def mean_elevation(self):
@@ -57,17 +71,7 @@ class OpenTraverse:
 
         return io.style.format(traverse_formatter)
 
-    def __repr__(self):
-        msg = f"""
-            Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
-            Traverse length: {self.length:.3f} m
-            Mean Elevation: {self.mean_elevation} m
-            k: {self.k:.4f}\n
-            α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g"""
-
-        return msg
-
-    def validate(self):
+    def is_validated(self):
         needed_angles = fmt_angle(self.stops)
         missing = [angle for angle in needed_angles if
                    angle not in self.metriseis['angle'].values]
@@ -197,10 +201,13 @@ class LinkTraverse(OpenTraverse):
 
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
+
         self.stops_count = len(stops) - 2
+
         self.l1 = finish[0] if finish else None
         self.l2 = finish[1] if finish else None
         self.a_finish = self.l1.azimuth(self.l2)
+
         self._l1_temp_x = 0
         self._l1_temp_y = 0
         self._l1_temp_z = 0
@@ -213,6 +220,24 @@ class LinkTraverse(OpenTraverse):
         data = pd.read_excel(file, sheet_name='Traverse_Measurements')
         working_dir = Path(file).parent
         return cls(stops, data, start, finish, working_dir)
+
+    def __repr__(self):
+        msg = f"""
+            Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
+            Traverse length: {self.length:.3f} m
+            Mean Elevation: {self.mean_elevation} m
+            k: {self.k:.4f}\n
+            α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g
+            α{self.l1.name}-{self.l2.name} : {self.a_finish:.4f} g
+            α'{self.l1.name}-{self.l2.name} : {self.a_measured:.4f} g
+            Angular Misclosure: {self.angular_misclosure:+.4f} g
+            Angular Correction: {self.angular_correction:+.4f} g\n
+            Horizontal Misclosure: {self.horizontal_misclosure:.3f} m
+            wX: {self.wx:+.3f} m
+            wY: {self.wy:+.3f} m
+            wZ: {self.wz:+.3f} m"""
+
+        return msg
 
     @property
     def mean_elevation(self):
@@ -285,24 +310,6 @@ class LinkTraverse(OpenTraverse):
              'wz': [self.wz]})
 
         return io.style.format(traverse_formatter)
-
-    def __repr__(self):
-        msg = f"""
-            Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
-            Traverse length: {self.length:.3f} m
-            Mean Elevation: {self.mean_elevation} m
-            k: {self.k:.4f}\n
-            α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g
-            α{self.l1.name}-{self.l2.name} : {self.a_finish:.4f} g
-            α'{self.l1.name}-{self.l2.name} : {self.a_measured:.4f} g
-            Angular Misclosure: {self.angular_misclosure:+.4f} g
-            Angular Correction: {self.angular_correction:+.4f} g\n
-            Horizontal Misclosure: {self.horizontal_misclosure:.3f} m
-            wX: {self.wx:+.3f} m
-            wY: {self.wy:+.3f} m
-            wZ: {self.wz:+.3f} m"""
-
-        return msg
 
     def compute(self):
         self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan
@@ -408,10 +415,14 @@ class ClosedTraverse(OpenTraverse):
                  data: pd.DataFrame = None,
                  start: List[Point] = None,
                  working_dir: (str, Path) = '.'):
+
         super().__init__(stops=stops, data=data, start=start,
                          working_dir=working_dir)
+
         self.stops_count = len(stops) - 3
+
         self.a_finish = self.f2.azimuth(self.f1)
+
         self._l1_temp_x = 0
         self._l1_temp_y = 0
         self._l1_temp_z = 0
@@ -423,6 +434,24 @@ class ClosedTraverse(OpenTraverse):
         data = pd.read_excel(file, sheet_name='Traverse_Measurements')
         working_dir = Path(file).parent
         return cls(stops, data, start, working_dir)
+
+    def __repr__(self):
+        msg = f"""
+                Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
+                Traverse length: {self.length:.3f} m
+                Mean Elevation: {self.mean_elevation} m
+                k: {self.k:.4f}\n
+                α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g
+                α{self.f2.name}-{self.f1.name} : {self.a_finish:.4f} g
+                α'{self.f2.name}-{self.f1.name} : {self.a_measured:.4f} g
+                Angular Misclosure: {self.angular_misclosure:+.4f} g
+                Angular Correction: {self.angular_correction:+.4f} g\n
+                Horizontal Misclosure: {self.horizontal_misclosure:.3f} m
+                wX: {self.wx:+.3f} m
+                wY: {self.wy:+.3f} m
+                wZ: {self.wz:+.3f} m"""
+
+        return msg
 
     @property
     def a_measured(self):
@@ -487,24 +516,6 @@ class ClosedTraverse(OpenTraverse):
              'wz': [self.wz]}, orient='index')
 
         return io.style.format(traverse_formatter)
-
-    def __repr__(self):
-        msg = f"""
-                Traverse stops: {'-'.join(self.stops)}  [{self.stops_count}]\n
-                Traverse length: {self.length:.3f} m
-                Mean Elevation: {self.mean_elevation} m
-                k: {self.k:.4f}\n
-                α{self.f1.name}-{self.f2.name} : {self.a_start:.4f} g
-                α{self.f2.name}-{self.f1.name} : {self.a_finish:.4f} g
-                α'{self.f2.name}-{self.f1.name} : {self.a_measured:.4f} g
-                Angular Misclosure: {self.angular_misclosure:+.4f} g
-                Angular Correction: {self.angular_correction:+.4f} g\n
-                Horizontal Misclosure: {self.horizontal_misclosure:.3f} m
-                wX: {self.wx:+.3f} m
-                wY: {self.wy:+.3f} m
-                wZ: {self.wz:+.3f} m"""
-
-        return msg
 
     def compute(self):
         self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan

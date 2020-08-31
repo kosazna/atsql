@@ -30,6 +30,7 @@ class SurveyProject:
                  traverses: (str, pd.DataFrame) = None,
                  known_points: (str, pd.DataFrame) = None,
                  working_dir: (str, Path) = None):
+
         self.name = name
         self.time = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
         self.working_dir = working_dir if working_dir else extract_workind_dir(
@@ -45,6 +46,7 @@ class SurveyProject:
         self.computed_traverses = []
         self.computed_traverses_count = 0
         self.computed_traverses_info = None
+
         self.computed_sideshots = []
         self.computed_sideshots_count = 0
 
@@ -71,8 +73,10 @@ class SurveyProject:
 
     def prepare_data(self):
         self.t_list['stations'] = self.t_list['stations'].str.split('-')
+
         self.t_list['start'] = self.t_list['stations'].apply(
             lambda x: x[:2])
+
         self.t_list['last'] = self.t_list['stations'].apply(
             lambda x: x[-2:])
 
@@ -95,16 +99,17 @@ class SurveyProject:
                                   start=self.point2obj(traverse.start),
                                   working_dir=self.working_dir)
 
-            tr.compute()
+            if tr.is_validated():
+                tr.compute()
 
-            self.computed_traverses.append(tr)
+                self.computed_traverses.append(tr)
 
-            if self.computed_traverses_info is not None:
-                self.computed_traverses_info = \
-                    self.computed_traverses_info.append(
-                        tr.metrics.copy()).reset_index(drop=True)
-            else:
-                self.computed_traverses_info = tr.metrics.copy()
+                if self.computed_traverses_info is not None:
+                    self.computed_traverses_info = \
+                        self.computed_traverses_info.append(
+                            tr.metrics.copy()).reset_index(drop=True)
+                else:
+                    self.computed_traverses_info = tr.metrics.copy()
 
         self.stations = self.stations + sum(
             [trav.stations for trav in self.computed_traverses])
@@ -127,13 +132,14 @@ class SurveyProject:
         for group in point_groups.groups:
             if group in self.stations:
                 _data = point_groups.get_group(group)
+
                 ss = Sideshot(_data,
                               self.stations[group[0]],
                               self.stations[group[1]])
 
                 ss.compute()
+
                 self.computed_sideshots.append(ss)
 
         self.sideshots = sum([s.points for s in self.computed_sideshots])
-        self.sideshots
         self.computed_sideshots_count = len(self.sideshots)
