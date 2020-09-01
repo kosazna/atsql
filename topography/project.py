@@ -24,7 +24,18 @@ def extract_workind_dir(data):
 
 def styler(data: pd.DataFrame, formatter: dict):
     return data.style.format(formatter).apply(warning,
-                                              subset=['angular', 'horizontal'])
+                                              subset=['angular'])
+
+
+def parse_stops(stationsstr, keep=0):
+    _stations = stationsstr.split('-')
+
+    if keep == 1:
+        return _stations[:2]
+    elif keep == -1:
+        return _stations[-2:]
+    else:
+        return _stations
 
 
 class SurveyProject:
@@ -48,9 +59,9 @@ class SurveyProject:
         self.stations = Container(_load(known_points))
         self.sideshots = Container()
 
-        self.computed_traverses = []
-        self.computed_traverses_count = 0
-        self.computed_traverses_info = None
+        self.traverses = []
+        self.traverses_count = 0
+        self.traverses_info = None
 
         self.computed_sideshots = []
         self.computed_sideshots_count = 0
@@ -76,57 +87,62 @@ class SurveyProject:
     def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
 
-    def prepare_data(self):
-        self.t_list['stations'] = self.t_list['stations'].str.split('-')
-
-        self.t_list['start'] = self.t_list['stations'].apply(
-            lambda x: x[:2])
-
-        self.t_list['last'] = self.t_list['stations'].apply(
-            lambda x: x[-2:])
+    # def prepare_data(self):
+    #     self.t_list['stations'] = self.t_list['stations'].str.split('-')
+    #
+    #     self.t_list['start'] = self.t_list['stations'].apply(
+    #         lambda x: x[:2])
+    #
+    #     self.t_list['last'] = self.t_list['stations'].apply(
+    #         lambda x: x[-2:])
 
     def compute_traverses(self):
         for traverse in self.t_list.itertuples():
             if traverse.t_type == 'LinkTraverse':
-                tr = LinkTraverse(stops=traverse.stations,
+                tr = LinkTraverse(stops=parse_stops(traverse.stations),
                                   data=self.t_data,
-                                  start=self.point2obj(traverse.start),
-                                  finish=self.point2obj(traverse.last),
+                                  start=self.point2obj(
+                                      parse_stops(traverse.stations, 1)),
+                                  finish=self.point2obj(
+                                      parse_stops(traverse.stations, -1)),
                                   working_dir=self.working_dir)
             elif traverse.t_type == 'ClosedTraverse':
-                tr = ClosedTraverse(stops=traverse.stations,
+                tr = ClosedTraverse(stops=parse_stops(self.stations),
                                     data=self.t_data,
-                                    start=self.point2obj(traverse.start),
+                                    start=self.point2obj(
+                                        parse_stops(traverse.stations, 1)),
                                     working_dir=self.working_dir)
             else:
-                tr = OpenTraverse(stops=traverse.stations,
+                tr = OpenTraverse(stops=parse_stops(traverse.stations),
                                   data=self.t_data,
-                                  start=self.point2obj(traverse.start),
+                                  start=self.point2obj(
+                                      parse_stops(traverse.stations, 1)),
                                   working_dir=self.working_dir)
 
             if tr.is_validated():
                 tr.compute()
 
-                self.computed_traverses.append(tr)
+                self.traverses.append(tr)
 
-                if self.computed_traverses_info is not None:
-                    self.computed_traverses_info = \
-                        self.computed_traverses_info.append(
-                            tr.metrics.copy()).reset_index(drop=True)
-                else:
-                    self.computed_traverses_info = tr.metrics.copy()
+        self.traverses_info = pd.concat(
+            [trav.metrics for trav in self.traverses]).reset_index(drop=True)
+
+        self.traverses_info.index = self.traverses_info.index + 1
 
         self.stations = self.stations + sum(
-            [trav.stations for trav in self.computed_traverses])
+            [trav.stations for trav in self.traverses])
 
-        self.computed_traverses_count = len(self.computed_traverses)
+        self.traverses_count = len(self.traverses)
 
-        return styler(self.computed_traverses_info, traverse_formatter)
+        return styler(self.traverses_info, traverse_formatter)
 
     def export_traverses(self):
         _out = self.working_dir.joinpath('Project_Traverses.xlsx')
+
         with pd.ExcelWriter(_out) as writer:
-            for i, traverse in enumerate(self.computed_traverses, 1):
+            self.traverses_info.round(4).to_excel(writer, sheet_name='Info')
+
+            for i, traverse in enumerate(self.traverses, 1):
                 traverse.odeusi.round(4).to_excel(writer,
                                                   index=False,
                                                   sheet_name=str(i))

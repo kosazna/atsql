@@ -4,7 +4,9 @@ from .misc import *
 EARTH_C = 6371000
 
 
-class Point:
+class Point(object):
+    __slots__ = ['name', 'x', 'y', 'z']
+
     def __init__(self, name: str,
                  x: float = 0.0,
                  y: float = 0.0,
@@ -46,6 +48,19 @@ class Point:
         dy = point.y - self.y
 
         return round8(np.sqrt(dx ** 2 + dy ** 2))
+
+    def offset(self, x=0.0, y=0.0, z=0.0):
+        self.x = self.x + x
+        self.y = self.y + y
+        self.z = self.z + z
+
+        return self
+
+    def copy(self, name='', z=True):
+        _name = self.name if not name else name
+        _z = self.z if z else 0.0
+
+        return Point(_name, self.x, self.y, _z)
 
 
 @vectorize

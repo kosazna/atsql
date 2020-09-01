@@ -311,7 +311,7 @@ class LinkTraverse(OpenTraverse):
              'wy': [self.wy],
              'wz': [self.wz]})
 
-        return io.style.format(traverse_formatter)
+        return io.style.format(traverse_formatter).hide_index()
 
     def compute(self):
         self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan
