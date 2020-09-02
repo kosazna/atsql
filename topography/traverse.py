@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 from .data import *
+from .config import *
 
 
 class OpenTraverse:
@@ -27,8 +28,6 @@ class OpenTraverse:
 
         self.stations = None
         self.metrics = None
-
-        # self.is_validated = OpenTraverse.validate(self)
 
     @classmethod
     def from_excel(cls, file: (str, Path),
@@ -87,8 +86,8 @@ class OpenTraverse:
         return True
 
     def compute(self):
-        self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan
-        self.odeusi.loc[self.odeusi.index[-1], 'distance'] = np.nan
+        # self.odeusi.loc[self.odeusi.index[-1], ['h_dist', 'dz_temp']] = np.nan
+        # self.odeusi.loc[self.odeusi.index[-1], 'distance'] = np.nan
 
         self.odeusi['surf_dist'] = surface_distance(self.odeusi['h_dist'],
                                                     self.mean_elevation)

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from .computation import *
-from .congif import *
 
 
 # noinspection PyTypeChecker
@@ -22,7 +21,7 @@ def transform_split(data: (str, pd.DataFrame)):
                                              p['Y'],
                                              p['Z']), axis=1)
     else:
-        df['obj'] = None
+        df['obj'] = np.nan
 
     df.set_index('station', drop=True, inplace=True)
     s = df['obj'].copy(deep=True)

@@ -87,15 +87,6 @@ class SurveyProject:
     def point2obj(self, points: (list, tuple)) -> List[Point]:
         return [self.stations[points[0]], self.stations[points[1]]]
 
-    # def prepare_data(self):
-    #     self.t_list['stations'] = self.t_list['stations'].str.split('-')
-    #
-    #     self.t_list['start'] = self.t_list['stations'].apply(
-    #         lambda x: x[:2])
-    #
-    #     self.t_list['last'] = self.t_list['stations'].apply(
-    #         lambda x: x[-2:])
-
     def compute_traverses(self):
         for traverse in self.t_list.itertuples():
             if traverse.t_type == 'LinkTraverse':
