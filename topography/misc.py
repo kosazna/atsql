@@ -12,7 +12,7 @@ def copy_shp(file: (str, Path), dst: (str, Path)):
     shutil.copy(_file.with_suffix('.shx'), dst)
 
 
-def export_shp(data: pd.DataFrame, dst: (str, Path), round_z=2):
+def export_shp(data: pd.DataFrame, dst: (str, Path), name: str, round_z=2):
     import geopandas as gpd
     _data = data.copy().reset_index().rename(columns={'station': 'ID'}).round(4)
     _data['ID'] = _data['ID'].astype(str)
@@ -20,7 +20,9 @@ def export_shp(data: pd.DataFrame, dst: (str, Path), round_z=2):
     _geometry = gpd.points_from_xy(_data['X'], _data['Y'], _data['Z'])
     gdf = gpd.GeoDataFrame(_data, geometry=_geometry)
 
-    gdf.to_file(dst)
+    output = Path(dst).joinpath(f'{name}.shp')
+
+    gdf.to_file(output)
 
 
 def round8(numbers):

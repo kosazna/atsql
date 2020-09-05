@@ -80,6 +80,8 @@ class Container:
     def sort(self):
         self._data, self._series = transform_split(self._data.sort_index())
 
+        return self
+
     def update(self, other: pd.DataFrame):
         _original = self._data.copy(deep=True).reset_index()
         _new = other.copy().reset_index()
@@ -87,3 +89,5 @@ class Container:
         _final = _original.append(_new).drop_duplicates(subset='station')
 
         self._data, self._series = transform_split(_final)
+
+        return self
