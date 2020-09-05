@@ -59,12 +59,12 @@ class SurveyProject:
         self.stations = Container(_load(known_points))
         self.sideshots = Container()
 
-        self.traverses = []
-        self.traverses_count = 0
-        self.traverses_info = None
+        self.c_traverses = []
+        self.c_traverses_count = 0
+        self.c_traverses_info = None
 
-        self.computed_sideshots = []
-        self.computed_sideshots_count = 0
+        self.c_sideshots = []
+        self.c_sideshots_count = 0
 
     @classmethod
     def from_single_file(cls, file):
@@ -88,7 +88,7 @@ class SurveyProject:
         return [self.stations[points[0]], self.stations[points[1]]]
 
     def compute_traverses(self):
-        self.traverses = []
+        self.c_traverses = []
         for traverse in self.t_list.itertuples():
             if traverse.compute == 1:
                 if traverse.t_type == 'LinkTraverse':
@@ -115,21 +115,21 @@ class SurveyProject:
                 if tr.is_validated():
                     tr.compute()
 
-                    self.traverses.append(tr)
+                    self.c_traverses.append(tr)
 
-        if self.traverses:
-            self.traverses_info = pd.concat(
-                [trav.metrics for trav in self.traverses]).reset_index(
+        if self.c_traverses:
+            self.c_traverses_info = pd.concat(
+                [trav.metrics for trav in self.c_traverses]).reset_index(
                 drop=True)
 
-            self.traverses_info.index = self.traverses_info.index + 1
+            self.c_traverses_info.index = self.c_traverses_info.index + 1
 
             self.stations = self.stations + sum(
-                [trav.stations for trav in self.traverses])
+                [trav.stations for trav in self.c_traverses])
 
-            self.traverses_count = len(self.traverses)
+            self.c_traverses_count = len(self.c_traverses)
 
-            return styler(self.traverses_info, traverse_formatter)
+            return styler(self.c_traverses_info, traverse_formatter)
         else:
             print("\nNo traverse was computed")
 
@@ -137,9 +137,9 @@ class SurveyProject:
         _out = self.working_dir.joinpath('Project_Traverses.xlsx')
 
         with pd.ExcelWriter(_out) as writer:
-            self.traverses_info.round(4).to_excel(writer, sheet_name='Info')
+            self.c_traverses_info.round(4).to_excel(writer, sheet_name='Info')
 
-            for i, traverse in enumerate(self.traverses, 1):
+            for i, traverse in enumerate(self.c_traverses, 1):
                 traverse.odeusi.round(4).to_excel(writer,
                                                   index=False,
                                                   sheet_name=str(i))
@@ -159,6 +159,8 @@ class SurveyProject:
         else:
             _exclude = exclude
 
+        self.sideshots = []
+
         point_groups = self.s_data.groupby(['station', 'bs'])
 
         for group in point_groups.groups:
@@ -171,11 +173,11 @@ class SurveyProject:
 
                 ss.compute()
 
-                self.computed_sideshots.append(ss)
+                self.c_sideshots.append(ss)
 
-        if self.computed_sideshots:
-            self.sideshots = sum([s.points for s in self.computed_sideshots])
+        if self.c_sideshots:
+            self.sideshots = sum([s.points for s in self.c_sideshots])
             self.sideshots.sort()
-            self.computed_sideshots_count = len(self.sideshots)
+            self.c_sideshots_count = len(self.sideshots)
 
-        print(f"[{self.computed_sideshots_count}] points were calculated.")
+        print(f"[{self.c_sideshots_count}] points were calculated.")
