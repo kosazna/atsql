@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .data import *
+from pathlib import Path
 
 
 class NikonRawConverter:
