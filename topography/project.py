@@ -4,40 +4,6 @@ from .taximetria import *
 from datetime import datetime
 
 
-def _load(data, sheet_name: str = None):
-    if isinstance(data, str):
-        _sheet = 0 if sheet_name is None else sheet_name
-        return pd.read_excel(data, sheet_name=_sheet)
-    return data
-
-
-def extract_workind_dir(data):
-    if isinstance(data, str):
-        _path = Path(data)
-        return _path if _path.is_dir() else _path.parent
-    elif isinstance(data, Path):
-        return data if data.is_dir() else data.parent
-    else:
-        raise IsADirectoryError("""Working directory can't be infered from data.
-        Provide 'working_dir' when instantiating the class SurveyProject.""")
-
-
-def styler(data: pd.DataFrame, formatter: dict):
-    return data.style.format(formatter).apply(warning,
-                                              subset=['angular'])
-
-
-def parse_stops(stationsstr, keep=0):
-    _stations = stationsstr.split('-')
-
-    if keep == 1:
-        return _stations[:2]
-    elif keep == -1:
-        return _stations[-2:]
-    else:
-        return _stations
-
-
 class SurveyProject:
     def __init__(self,
                  name: str = None,
@@ -52,11 +18,11 @@ class SurveyProject:
         self.working_dir = working_dir if working_dir else extract_workind_dir(
             traverses)
 
-        self.t_data = _load(traverse_data)
-        self.s_data = _load(sideshot_data)
-        self.t_list = _load(traverses)
+        self.t_data = load_data(traverse_data)
+        self.s_data = load_data(sideshot_data)
+        self.t_list = load_data(traverses)
 
-        self.stations = Container(_load(known_points))
+        self.stations = Container(load_data(known_points))
         self.sideshots = Container()
 
         self.c_traverses = []

@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 from .misc import *
-from pathlib import Path
 from shutil import copy
+
+
+def load_data(data, sheet_name: str = None):
+    if isinstance(data, str):
+        _sheet = 0 if sheet_name is None else sheet_name
+        return pd.read_excel(data, sheet_name=_sheet)
+    return data
 
 
 def copy_shp(file: (str, Path), dst: (str, Path)):

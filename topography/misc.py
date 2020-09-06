@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from .config import *
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
 
 def round8(numbers):
@@ -77,3 +79,30 @@ def meas_type(fs: str, h_angle: float):
         return 'stasi'
     else:
         return 'taximetriko'
+
+
+def extract_workind_dir(data):
+    if isinstance(data, str):
+        _path = Path(data)
+        return _path if _path.is_dir() else _path.parent
+    elif isinstance(data, Path):
+        return data if data.is_dir() else data.parent
+    else:
+        raise IsADirectoryError("""Working directory can't be infered from data.
+        Provide 'working_dir' when instantiating the class SurveyProject.""")
+
+
+def parse_stops(stationsstr, keep=0):
+    _stations = stationsstr.split('-')
+
+    if keep == 1:
+        return _stations[:2]
+    elif keep == -1:
+        return _stations[-2:]
+    else:
+        return _stations
+
+
+def styler(data: pd.DataFrame, formatter: dict):
+    return data.style.format(formatter).apply(warning,
+                                              subset=['angular'])

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import List
 from .data import *
-from .config import *
 from .io import *
 
 
