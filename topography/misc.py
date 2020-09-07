@@ -14,13 +14,13 @@ def vectorize(func):
         vector = False
 
         for i in args:
-            if isinstance(i, (np.ndarray, pd.core.series.Series)):
+            if isinstance(i, (np.ndarray, pd.Series)):
                 vector = True
                 break
 
         if not vector:
             for i in kwargs:
-                if isinstance(kwargs[i], (np.ndarray, pd.core.series.Series)):
+                if isinstance(kwargs[i], (np.ndarray, pd.Series)):
                     vector = True
                     break
 

@@ -68,8 +68,8 @@ def pt2tuple(point: Point):
 
 
 @vectorize
-def azimuth_from_cords(a: (tuple, Point, np.ndarray, pd.core.series.Series),
-                       b: (tuple, Point, np.ndarray, pd.core.series.Series),
+def azimuth_from_cords(a: (tuple, Point, np.ndarray, pd.Series),
+                       b: (tuple, Point, np.ndarray, pd.Series),
                        reverse: bool = False,
                        point_object: bool = False):
     if point_object:
@@ -93,8 +93,8 @@ def azimuth_from_cords(a: (tuple, Point, np.ndarray, pd.core.series.Series),
 
 
 @vectorize
-def distance_from_cords(a: (tuple, Point, np.ndarray, pd.core.series.Series),
-                        b: (tuple, Point, np.ndarray, pd.core.series.Series),
+def distance_from_cords(a: (tuple, Point, np.ndarray, pd.Series),
+                        b: (tuple, Point, np.ndarray, pd.Series),
                         point_object: bool = False):
     if point_object:
         dx = b.x - a.x
@@ -109,7 +109,7 @@ def distance_from_cords(a: (tuple, Point, np.ndarray, pd.core.series.Series),
 def azimuth_from_measurements(start,
                               measurements: (list,
                                              np.array,
-                                             pd.core.series.Series)) -> float:
+                                             pd.Series)) -> float:
     am = start + round(sum(measurements), 6) + measurements.count() * 200
 
     return round(am % 400, 6)
