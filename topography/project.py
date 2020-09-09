@@ -2,6 +2,7 @@
 from .traverse import *
 from .taximetria import *
 from datetime import datetime
+from functools import partial
 
 
 class SurveyProject:
@@ -112,26 +113,26 @@ class SurveyProject:
 
     def compute_taximetria(self, exclude=None):
         def exclusion(group_check, items):
-            if not items:
-                return True
-            else:
-                for i in group_check:
-                    if i in items:
-                        return False
-                return True
+            return not bool(set(group_check).intersection(items))
+
+        self.c_sideshots = []
+
+        all_groups = self.s_data.groupby(['station', 'bs'])
 
         if exclude is None:
-            _exclude = []
+            point_groups = list(all_groups.groups)
         else:
-            _exclude = exclude
+            if isinstance(exclude, str):
+                _exclude = [exclude]
+            else:
+                _exclude = exclude
 
-        self.sideshots = []
+            part_exclusion = partial(exclusion, items=_exclude)
+            point_groups = list(filter(part_exclusion, all_groups.groups))
 
-        point_groups = self.s_data.groupby(['station', 'bs'])
-
-        for group in point_groups.groups:
-            if group in self.stations and exclusion(group, _exclude):
-                _data = point_groups.get_group(group)
+        for group in point_groups:
+            if group in self.stations:
+                _data = all_groups.get_group(group)
 
                 ss = Sideshot(_data,
                               self.stations[group[0]],
