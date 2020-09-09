@@ -77,6 +77,15 @@ class Container:
         keep = ['X', 'Y', 'Z']
         return self._data[keep].copy()
 
+    @property
+    def boundaries(self):
+        xmin = int(np.floor(self.data['X'].min()))
+        ymin = int(np.floor(self.data['Y'].min()))
+        xmax = int(np.floor(self.data['X'].max()))
+        ymax = int(np.floor(self.data['Y'].max()))
+
+        return xmin, ymin, xmax, ymax
+
     def sort(self):
         self._data, self._series = transform_split(self._data.sort_index())
 
@@ -91,11 +100,3 @@ class Container:
         self._data, self._series = transform_split(_final)
 
         return self
-
-    def boundaries(self):
-        xmin = int(np.floor(self.data['X'].min()))
-        ymin = int(np.floor(self.data['Y'].min()))
-        xmax = int(np.floor(self.data['X'].max()))
-        ymax = int(np.floor(self.data['Y'].max()))
-
-        return xmin, ymin, xmax, ymax
