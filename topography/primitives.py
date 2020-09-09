@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from shapely.geometry.point import Point as ShapelyPoint
 
 
 class Point(object):

@@ -91,3 +91,11 @@ class Container:
         self._data, self._series = transform_split(_final)
 
         return self
+
+    def boundaries(self):
+        xmin = int(np.floor(self.data['X'].min()))
+        ymin = int(np.floor(self.data['Y'].min()))
+        xmax = int(np.floor(self.data['X'].max()))
+        ymax = int(np.floor(self.data['Y'].max()))
+
+        return xmin, ymin, xmax, ymax

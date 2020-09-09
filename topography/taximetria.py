@@ -35,7 +35,7 @@ class Sideshot:
                               self.tm['egsa_dist'],
                               self.tm['azimuth'])
 
-        self.tm['Y'] = calc_Y(self.station.x,
+        self.tm['Y'] = calc_Y(self.station.y,
                               self.tm['egsa_dist'],
                               self.tm['azimuth'])
 
