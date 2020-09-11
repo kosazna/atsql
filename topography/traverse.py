@@ -192,6 +192,16 @@ class OpenTraverse:
 
         self.stations.round(4).to_excel(_dir.joinpath(f'S_{name}.xlsx'))
 
+    def to_shp(self, dst: (str, Path), name: str, round_z=2):
+        self.stations.to_shp(dst=dst, name=name, round_z=round_z)
+
+    def to_excel(self, dst: (str, Path), name: str, decimals=4):
+        self.stations.to_excel(dst=dst, name=name, decimals=decimals)
+
+    def to_csv(self, dst: (str, Path), name: str, decimals=4, point_id=False):
+        self.stations.to_csv(dst=dst, name=name, decimals=decimals,
+                             point_id=point_id)
+
 
 class LinkTraverse(OpenTraverse):
     def __init__(self, stops: list,

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .computation import *
+from .io import *
 
 
 # noinspection PyTypeChecker
@@ -100,3 +101,14 @@ class Container:
         self._data, self._series = transform_split(_final)
 
         return self
+
+    def to_shp(self, dst: (str, Path), name: str, round_z=2):
+        export_shp(data=self.data, dst=dst, name=name, round_z=round_z)
+
+    def to_excel(self, dst: (str, Path), name: str, decimals=4):
+        _dst = Path(dst).joinpath(f'{name}.xlsx')
+        self.data.rename_axis('ID').round(decimals).to_excel(_dst)
+
+    def to_csv(self, dst: (str, Path), name: str, decimals=4, point_id=False):
+        _dst = Path(dst).joinpath(f'{name}.csv')
+        self.data.round(decimals).to_csv(_dst, header=False, index=point_id)
