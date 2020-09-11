@@ -147,4 +147,6 @@ class SurveyProject:
             self.sideshots.sort()
             self.c_sideshots_count = len(self.sideshots)
 
-        print(f"[{self.c_sideshots_count}] points were calculated.")
+            print(f"[{self.c_sideshots_count}] points were calculated.")
+        else:
+            print('No sideshots were computed')

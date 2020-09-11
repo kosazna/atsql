@@ -74,6 +74,10 @@ class Container:
         return iter(self._series)
 
     @property
+    def empty(self):
+        return self.data.empty
+
+    @property
     def data(self):
         keep = ['X', 'Y', 'Z']
         return self._data[keep].copy()
@@ -103,12 +107,21 @@ class Container:
         return self
 
     def to_shp(self, dst: (str, Path), name: str, round_z=2):
-        export_shp(data=self.data, dst=dst, name=name, round_z=round_z)
+        if self.empty:
+            print("Can't export empty data Container")
+        else:
+            export_shp(data=self.data, dst=dst, name=name, round_z=round_z)
 
     def to_excel(self, dst: (str, Path), name: str, decimals=4):
-        _dst = Path(dst).joinpath(f'{name}.xlsx')
-        self.data.rename_axis('ID').round(decimals).to_excel(_dst)
+        if self.empty:
+            print("Can't export empty data Container")
+        else:
+            _dst = Path(dst).joinpath(f'{name}.xlsx')
+            self.data.rename_axis('ID').round(decimals).to_excel(_dst)
 
     def to_csv(self, dst: (str, Path), name: str, decimals=4, point_id=False):
-        _dst = Path(dst).joinpath(f'{name}.csv')
-        self.data.round(decimals).to_csv(_dst, header=False, index=point_id)
+        if self.empty:
+            print("Can't export empty data Container")
+        else:
+            _dst = Path(dst).joinpath(f'{name}.csv')
+            self.data.round(decimals).to_csv(_dst, header=False, index=point_id)
