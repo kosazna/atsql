@@ -86,8 +86,8 @@ class Container:
     def boundaries(self):
         xmin = int(np.floor(self.data['X'].min()))
         ymin = int(np.floor(self.data['Y'].min()))
-        xmax = int(np.floor(self.data['X'].max()))
-        ymax = int(np.floor(self.data['Y'].max()))
+        xmax = int(np.ceil(self.data['X'].max()))
+        ymax = int(np.ceil(self.data['Y'].max()))
 
         return xmin, ymin, xmax, ymax
 
