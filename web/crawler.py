@@ -19,11 +19,11 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                              'class': '_34Xs-BQm'}}
 
 
-def url2soup(url: str):
+def url2soup(url: str, parser='lxml'):
     url_content = requests.get(url)
 
     if url_content.status_code == 200:
-        return BeautifulSoup(url_content.content, 'lxml')
+        return BeautifulSoup(url_content.content, parser)
     else:
         return None
 
@@ -40,3 +40,20 @@ def parse(soup: BeautifulSoup, what):
         return content.text
     except AttributeError:
         return None
+
+
+def multi_parse(soup: BeautifulSoup, what, text=True):
+    try:
+        content = soup.find_all(trip_advisor_map[what]['tag'],
+                                {'class': trip_advisor_map[what]['class']})
+    except KeyError:
+        print(f'[{what}] is not available')
+        content = None
+
+    if content:
+        if text:
+            return [i.text for i in content]
+        else:
+            return content
+    else:
+        return list()
