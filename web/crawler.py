@@ -16,7 +16,10 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                     'text': {'tag': 'q',
                              'class': 'IRsGHoPm'},
                     'date': {'tag': 'span',
-                             'class': '_34Xs-BQm'}}
+                             'class': '_34Xs-BQm'},
+
+                    'rating': {'tag': 'div',
+                               'class': 'nf9vGX55'}}
 
 
 def url2soup(url: str, parser='lxml'):
