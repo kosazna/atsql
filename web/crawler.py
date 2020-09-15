@@ -1,5 +1,4 @@
 import requests
-import re
 from bs4 import BeautifulSoup
 
 trip_advisor_map = {'review_block': {'tag': 'div',
@@ -172,11 +171,11 @@ class TripAdvisorReviewBlock:
 
     @property
     def trip_type(self):
-        stay_date = parse(self.soup, 'trip_type')
+        trip_type = parse(self.soup, 'trip_type')
 
-        if stay_date is None:
+        if trip_type is None:
             return ''
-        return stay_date.strip('Date of stay: ')
+        return trip_type.strip('Trip type: ')
 
     @property
     def amenities_rating(self):
