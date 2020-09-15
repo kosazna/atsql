@@ -20,6 +20,8 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                                     'class': 'IRsGHoPm'},
                     'stay_date': {'tag': 'span',
                                   'class': '_34Xs-BQm'},
+                    'trip_type': {'tag': 'span',
+                                  'class': '_2bVY3aT5'},
                     'amenity_group': {'tag': 'div',
                                       'class': '_3ErKuh24 _1OrVnQ-J'},
                     'amenity': {'tag': 'span',
@@ -169,7 +171,15 @@ class TripAdvisorReviewBlock:
         return stay_date.strip('Date of stay: ')
 
     @property
-    def amenitities_rating(self):
+    def trip_type(self):
+        stay_date = parse(self.soup, 'trip_type')
+
+        if stay_date is None:
+            return ''
+        return stay_date.strip('Date of stay: ')
+
+    @property
+    def amenities_rating(self):
         # area that contains single review for amenity
         amenities = self.soup.find_all('div', {
             'class': '_3ErKuh24 _1OrVnQ-J'})
