@@ -27,6 +27,17 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                                 'class': '_3-8hSrXs'}}
 
 
+def str2int(string_number: str):
+    numbers = string_number.split(',')
+
+    if len(numbers) == 1:
+        return int(numbers[0])
+    elif len(numbers) == 2:
+        return 1000 + int(numbers[1])
+    else:
+        return 1000000 + int(numbers[1]) * 1000 + int(numbers[2])
+
+
 def url2soup(url: str, parser='lxml'):
     url_content = requests.get(url)
 
@@ -48,7 +59,7 @@ def split_contributions_votes(details):
             else:
                 votes = detail[0]
 
-        return int(contributions), int(votes)
+        return str2int(str(contributions)), str2int(str(votes))
     return 0, 0
 
 
@@ -175,7 +186,7 @@ class TripAdvisorReviewBlock:
 
         if trip_type is None:
             return ''
-        return trip_type.strip('Trip type: ')
+        return trip_type
 
     @property
     def amenities_rating(self):
@@ -192,3 +203,4 @@ class TripAdvisorReviewBlock:
                               for value in rating.find_all(class_=True)]
 
             return list(zip(amenity_name, amenity_rating))
+        return []
