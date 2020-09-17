@@ -29,13 +29,14 @@ trip_advisor_map = {'review_block': {'tag': 'div',
 
 def str2int(string_number: str):
     numbers = string_number.split(',')
+    ints = list(map(int, numbers))
 
     if len(numbers) == 1:
-        return int(numbers[0])
+        return ints[0]
     elif len(numbers) == 2:
-        return 1000 + int(numbers[1])
+        return ints[0] * 1000 + ints[1]
     else:
-        return 1000000 + int(numbers[1]) * 1000 + int(numbers[2])
+        return ints[0] * 1000000 + ints[1] * 1000 + ints[2]
 
 
 def url2soup(url: str, parser='lxml'):
