@@ -8,7 +8,6 @@
 # Given the url of a hotel page the crawler can identify each review block
 # and later extract all its information
 
-import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from pathlib import Path
@@ -40,30 +39,11 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                     'amenity_group': {'tag': 'div',
                                       'class': '_3ErKuh24 _1OrVnQ-J'},
                     'amenity': {'tag': 'span',
-                                'class': '_3-8hSrXs'}}
-
-
-def click_readmore(driver):
-    driver.find_element_by_class_name("_3maEfNCR").click()
-
-
-def click_next(driver):
-    driver.find_element_by_class_name("_16gKMTFp").find_elements_by_tag_name(
-        "a")[1].click()
-
-
-def ta_page_reviews(driver):
-    _content = BeautifulSoup(driver.page_source, 'lxml')
-    _reviews = multi_parse(_content, 'review_block', text=False)
-
-    return _reviews
-
-
-def more_pages_exist(driver):
-    _len = len(driver.find_element_by_class_name(
-        "_16gKMTFp").find_elements_by_tag_name("a"))
-
-    return True if _len == 8 else False
+                                'class': '_3-8hSrXs'},
+                    'button_readmore': {'tag': 'span',
+                                        'class': '_3maEfNCR'},
+                    'button_next': {'tag': 'div',  # area of paginator
+                                    'class': '_16gKMTFp'}}
 
 
 def str2int(string_number: str,
@@ -91,15 +71,6 @@ def str2int(string_number: str,
         return ints[0] * 1000 + ints[1]
     else:
         return ints[0] * 1000000 + ints[1] * 1000 + ints[2]
-
-
-def url2soup(url: str, parser='lxml'):
-    url_content = requests.get(url)
-
-    if url_content.status_code == 200:
-        return BeautifulSoup(url_content.content, parser)
-    else:
-        return None
 
 
 def split_contributions_votes(details: list) -> Tuple[int]:
@@ -242,7 +213,7 @@ def extract_rating_multi(soup: BeautifulSoup) -> List[int]:
 class TripAdvisorReviewBlock:
     """
     This class is used to parse the html code of a single review block and
-    extract all its information
+    extract all its information.
 
     Attributes
     ----------
@@ -354,6 +325,28 @@ class TripAdvisorReviewBlock:
 
 
 class TripAdvisorHotelInfo:
+    """
+    This class is used to launch and control the webdriver and parse the
+    html code of every single page to extract all the neccessary information.
+
+    Attributes
+    ----------
+    - url: Hotel url
+    - hotel_name: Name of the hotel
+    - hotel_place: Place of the hotel
+    - driver: selenium webdriver
+    - review_count: Number of parsed reviews
+    - data: dictionary of lists so that parsed data can be stored
+
+    Methods
+    -------
+    - launch
+    - click
+    - parse
+    - collect
+    - export
+    """
+
     def __init__(self, url, hotel_name, hotel_place):
         self.url = url
         self.hotel_name = hotel_name
@@ -371,7 +364,31 @@ class TripAdvisorHotelInfo:
                      'trip_type': list(),
                      'amenities': list()}
 
-    def launch(self, browser, executable):
+    def click(self, button: str):
+        """
+        Used to click a page button.
+
+        :param button: str
+            'Next' or 'Read more'
+        :return: nothing
+        """
+        if button == 'Next':
+            self.driver.find_element_by_class_name(
+                "_16gKMTFp").find_elements_by_tag_name("a")[1].click()
+        elif button == 'Read more':
+            self.driver.find_element_by_class_name("_3maEfNCR").click()
+
+    def launch(self, browser: str, executable: str):
+        """
+        Launches the browser to the specified url and waits 4 seconds
+        so that it can fully load.
+
+        :param browser: str
+            'Chrome' or 'Firefox"
+        :param executable: str
+            Path to executable webdriver
+        :return: nothing
+        """
         if browser == 'Chrome':
             self.driver = webdriver.Chrome(executable)
         elif browser == 'Firefox':
@@ -383,14 +400,14 @@ class TripAdvisorHotelInfo:
         self.driver.get(self.url)
         sleep(4)
 
-    def click(self, element):
-        if element == 'Next':
-            self.driver.find_element_by_class_name(
-                "_16gKMTFp").find_elements_by_tag_name("a")[1].click()
-        elif element == 'Read more':
-            self.driver.find_element_by_class_name("_3maEfNCR").click()
+    def parse(self, parser: str = 'lxml'):
+        """
+        Parses all the reviews from a single page.
 
-    def parse(self, parser='lxml'):
+        :param parser: str
+            Parser to be used from BeatifulSoup (default: 'lxml')
+        :return: nothing
+        """
         content = BeautifulSoup(self.driver.page_source, parser)
         reviews = multi_parse(content, 'review_block', text=False)
 
@@ -410,6 +427,12 @@ class TripAdvisorHotelInfo:
         self.review_count += len(reviews)
 
     def collect(self):
+        """
+        Collects all reviews from the given hotel url page.
+        It goes through all pages and when finished the webdriver is closed.
+
+        :return: Nothing
+        """
         self.click('Read more')
         self.parse()
 
@@ -429,7 +452,17 @@ class TripAdvisorHotelInfo:
         print("Process Finished")
         print(f"Number of parsed reviews: {self.review_count}")
 
-    def export(self, folder):
+    def export(self, folder: str):
+        """
+        Creates a pandas dataframe from the collected data dictionary. The
+        dataframe index is incremented by 1 and two new columns are added
+        with the provided hotel name and hotel place.
+
+        :param folder: str
+            Folder path to save the excel file.
+        :return: pd.DataFrame
+            Created pandas dataframe with the data
+        """
         all_reviews = pd.DataFrame.from_dict(self.data)
         all_reviews.index += 1
 
