@@ -248,8 +248,7 @@ class TripAdvisorReviewBlock:
         name_n_date = parse(self.soup, 'reviewer_name_n_date')
 
         try:
-            date = name_n_date.split(' wrote a review ')[1]
-            return date
+            return name_n_date
         except AttributeError:
             return ''
 
@@ -292,7 +291,7 @@ class TripAdvisorReviewBlock:
 
         if stay_date is None:
             return ''
-        return stay_date.strip('Date of stay: ')
+        return stay_date
 
     @property
     def trip_type(self):
