@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# author: Aznavouridis Konstantinos
+# author: Konstantinos Aznavouridis
 # email: aznavouridis.k@gmail.com
 # github: kosazna
 
 # TripAdvisor Crawler developed on September 2020
+# for academic purposes and not commercial use
+
 # Given the url of a hotel page the crawler can identify each review block
-# and later extract all its information
+# and later extract all its information.
 
 import pandas as pd
 from bs4 import BeautifulSoup
