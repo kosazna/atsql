@@ -364,6 +364,21 @@ class TripAdvisorHotelInfo:
                      'trip_type': list(),
                      'amenities': list()}
 
+    def _pages(self):
+        """
+        Counts how many items the paginator area has. If 8 items exist
+        then both 'Previous' and 'Next' buttons are activates. If 7 items
+        exist the one the the buttons are deactivated indicating that either
+        the webdriver is in the first page or the last.
+
+        The function is used to terminate the loop when all the pages are
+        exhausted.
+        :return: nothing
+        """
+        return len(self.driver.find_element_by_class_name(
+            trip_advisor_map['button_next']['class']).find_elements_by_tag_name(
+            "a"))
+
     def click(self, button: str):
         """
         Used to click a page button.
@@ -374,9 +389,11 @@ class TripAdvisorHotelInfo:
         """
         if button == 'Next':
             self.driver.find_element_by_class_name(
-                "_16gKMTFp").find_elements_by_tag_name("a")[1].click()
+                trip_advisor_map['button_next'][
+                    'class']).find_elements_by_tag_name("a")[1].click()
         elif button == 'Read more':
-            self.driver.find_element_by_class_name("_3maEfNCR").click()
+            self.driver.find_element_by_class_name(
+                trip_advisor_map['button_readmore']['class']).click()
 
     def launch(self, browser: str, executable: str):
         """
@@ -444,8 +461,7 @@ class TripAdvisorHotelInfo:
             self.click('Read more')
             self.parse()
 
-            _stopper = len(self.driver.find_element_by_class_name(
-                "_16gKMTFp").find_elements_by_tag_name("a"))
+            _stopper = self._pages()
 
         self.driver.close()
 
