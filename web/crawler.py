@@ -9,7 +9,11 @@
 # and later extract all its information
 
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
+from pathlib import Path
+from selenium import webdriver
+from time import sleep
 from typing import List, Tuple
 
 # TripAdvisor tag and class mapper. Used for the BeautifulSoup objects
@@ -37,6 +41,29 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                                       'class': '_3ErKuh24 _1OrVnQ-J'},
                     'amenity': {'tag': 'span',
                                 'class': '_3-8hSrXs'}}
+
+
+def click_readmore(driver):
+    driver.find_element_by_class_name("_3maEfNCR").click()
+
+
+def click_next(driver):
+    driver.find_element_by_class_name("_16gKMTFp").find_elements_by_tag_name(
+        "a")[1].click()
+
+
+def ta_page_reviews(driver):
+    _content = BeautifulSoup(driver.page_source, 'lxml')
+    _reviews = multi_parse(_content, 'review_block', text=False)
+
+    return _reviews
+
+
+def more_pages_exist(driver):
+    _len = len(driver.find_element_by_class_name(
+        "_16gKMTFp").find_elements_by_tag_name("a"))
+
+    return True if _len == 8 else False
 
 
 def str2int(string_number: str,
@@ -134,7 +161,7 @@ def parse(soup: BeautifulSoup,
 
 def multi_parse(soup: BeautifulSoup,
                 ta_object: str,
-                text: bool = True) -> (List[(str, BeautifulSoup)], None):
+                text: bool = True) -> (List[str], List[BeautifulSoup], None):
     """
     Parse TripAdvisor html code and returns the specified object based
     on the trip_advisor_map dictionary keys.
@@ -232,6 +259,7 @@ class TripAdvisorReviewBlock:
     - trip_type: Trip type (Solo, Family, Business etc.)
     - amenities_rating: Reviewer rating for some amenities
     """
+
     def __init__(self, soup: BeautifulSoup):
         self.soup = soup
         self.raw = str(soup)
@@ -323,3 +351,96 @@ class TripAdvisorReviewBlock:
 
             return list(zip(amenity_name, amenity_rating))
         return []
+
+
+class TripAdvisorHotelInfo:
+    def __init__(self, url, hotel_name, hotel_place):
+        self.url = url
+        self.hotel_name = hotel_name
+        self.hotel_place = hotel_place
+        self.driver = None
+        self.review_count = 0
+        self.data = {'name': list(),
+                     'review_date': list(),
+                     'origin': list(),
+                     'rating': list(),
+                     'details': list(),
+                     'title': list(),
+                     'review': list(),
+                     'stay_date': list(),
+                     'trip_type': list(),
+                     'amenities': list()}
+
+    def launch(self, browser, executable):
+        if browser == 'Chrome':
+            self.driver = webdriver.Chrome(executable)
+        elif browser == 'Firefox':
+            self.driver = webdriver.Firefox(executable)
+        else:
+            print(f'Browser not supported: {browser}')
+            return
+
+        self.driver.get(self.url)
+        sleep(4)
+
+    def click(self, element):
+        if element == 'Next':
+            self.driver.find_element_by_class_name(
+                "_16gKMTFp").find_elements_by_tag_name("a")[1].click()
+        elif element == 'Read more':
+            self.driver.find_element_by_class_name("_3maEfNCR").click()
+
+    def parse(self, parser='lxml'):
+        content = BeautifulSoup(self.driver.page_source, parser)
+        reviews = multi_parse(content, 'review_block', text=False)
+
+        for review in reviews:
+            tarb = TripAdvisorReviewBlock(review)
+            self.data['name'].append(tarb.reviewer_name)
+            self.data['review_date'].append(tarb.review_date)
+            self.data['origin'].append(tarb.reviewer_origin)
+            self.data['rating'].append(tarb.reviewer_rating)
+            self.data['details'].append(tarb.reviewer_details)
+            self.data['title'].append(tarb.review_title)
+            self.data['review'].append(tarb.review_text)
+            self.data['stay_date'].append(tarb.stay_date)
+            self.data['trip_type'].append(tarb.trip_type)
+            self.data['amenities'].append(tarb.amenities_rating)
+
+        self.review_count += len(reviews)
+
+    def collect(self):
+        self.click('Read more')
+        self.parse()
+
+        _stopper = 8
+
+        while _stopper == 8:
+            self.click('Next')
+            sleep(2)
+            self.click('Read more')
+            self.parse()
+
+            _stopper = len(self.driver.find_element_by_class_name(
+                "_16gKMTFp").find_elements_by_tag_name("a"))
+
+        self.driver.close()
+
+        print("Process Finished")
+        print(f"Number of parsed reviews: {self.review_count}")
+
+    def export(self, folder):
+        all_reviews = pd.DataFrame.from_dict(self.data)
+        all_reviews.index += 1
+
+        all_reviews['hotel'] = self.hotel_name
+        all_reviews['place'] = self.hotel_place
+
+        save_name = '_'.join([self.hotel_name, self.hotel_place])
+        dst = Path(folder).joinpath(f'{save_name}.xlsx')
+
+        all_reviews.to_excel(dst)
+
+        print(f"Exported excel file at:\n    {dst}\n")
+
+        return all_reviews
