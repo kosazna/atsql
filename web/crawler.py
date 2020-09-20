@@ -36,9 +36,9 @@ trip_advisor_map = {'review_block': {'tag': 'div',
                                   'class': '_34Xs-BQm'},
                     'trip_type': {'tag': 'span',
                                   'class': '_2bVY3aT5'},
-                    'amenity_group': {'tag': 'div',
+                    'amenity_group': {'tag': 'div',  # area of single amenity
                                       'class': '_3ErKuh24 _1OrVnQ-J'},
-                    'amenity': {'tag': 'span',
+                    'amenity': {'tag': 'span',  # amenity bubble rating
                                 'class': '_3-8hSrXs'},
                     'button_readmore': {'tag': 'span',
                                         'class': '_3maEfNCR'},
