@@ -107,15 +107,15 @@ def parse(soup: BeautifulSoup,
     Parse TripAdvisor html code and returns the specified object based
     on the trip_advisor_map dictionary keys.
 
-    :param soup: BeatifulSoup
+    :param soup: BeautifulSoup
         BeautifulSoup object
     :param ta_object: str
         Object to be found and parsed. Argument is searched in the
         trip_advisor_map dictionary.
     :param text: bool
-        Whether to return the text or the BeatifulSoup object if found.
+        Whether to return the text or the BeautifulSoup object if found.
         (default: True)
-    :return: str or BeatifulSoup or None
+    :return: str or BeautifulSoup or None
         If nothing is found None is returned.
     """
     try:
@@ -139,13 +139,13 @@ def multi_parse(soup: BeautifulSoup,
     Parse TripAdvisor html code and returns the specified object based
     on the trip_advisor_map dictionary keys.
 
-    :param soup: BeatifulSoup
+    :param soup: BeautifulSoup
         BeautifulSoup object
     :param ta_object: str
         Object to be found and parsed. Argument is searched in the
         trip_advisor_map dictionary.
     :param text: bool
-        Whether to return the text or the BeatifulSoup object if found.
+        Whether to return the text or the BeautifulSoup object if found.
         (default: True)
     :return: list
         List of str if text=True.
@@ -174,7 +174,7 @@ def extract_rating(soup: BeautifulSoup) -> int:
 
     "ui_rating bubble_50" is transformed to a rating of 5.
 
-    :param soup: BeatifulSoup
+    :param soup: BeautifulSoup
         BeautifulSoup object
     :return: int
         The user rating if found else -1
@@ -196,7 +196,7 @@ def extract_ratings(soup: BeautifulSoup) -> List[int]:
 
     "ui_rating bubble_50" is transformed to a rating of 5.
 
-    :param soup: BeatifulSoup
+    :param soup: BeautifulSoup
         BeautifulSoup object
     :return: list
         List of tuples if ratings are found else empty list
@@ -370,7 +370,7 @@ class TripAdvisorHotelPage:
         """
         Counts how many items the paginator area has. If 8 items exist
         then both 'Previous' and 'Next' buttons are activates. If 7 items
-        exist the one the the buttons are deactivated indicating that either
+        exist then one of the buttons are deactivated indicating that either
         the webdriver is in the first page or the last.
 
         The function is used to terminate the loop when all the pages are
@@ -442,7 +442,7 @@ class TripAdvisorHotelPage:
         Parses all the reviews from a single page.
 
         :param parser: str
-            Parser to be used from BeatifulSoup (default: 'lxml')
+            Parser to be used from BeautifulSoup (default: 'lxml')
         :return: nothing
         """
         content = BeautifulSoup(self.driver.page_source, parser)
@@ -466,10 +466,12 @@ class TripAdvisorHotelPage:
     def collect(self, close=True):
         """
         Collects all reviews from the given hotel url page.
-        It goes through all pages and when finished the webdriver is closed.
+        It goes through all pages and when finished the webdriver is closed
+        if parameter close is True.
 
         :param close: bool
             Whether to terminate the webdriver session or not.
+            (default: True)
         :return: Nothing
         """
         self.click('Read more')
