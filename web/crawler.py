@@ -463,11 +463,13 @@ class TripAdvisorHotelPage:
 
         self.review_count += len(reviews)
 
-    def collect(self):
+    def collect(self, close=True):
         """
         Collects all reviews from the given hotel url page.
         It goes through all pages and when finished the webdriver is closed.
 
+        :param close: bool
+            Whether to terminate the webdriver session or not.
         :return: Nothing
         """
         self.click('Read more')
@@ -483,7 +485,8 @@ class TripAdvisorHotelPage:
 
             _stopper = self._pages()
 
-        self.driver.close()
+        if close:
+            self.driver.close()
 
         print("Process Finished")
         print(f"Number of parsed reviews: {self.review_count}")
