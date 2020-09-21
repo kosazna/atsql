@@ -188,7 +188,7 @@ def extract_rating(soup: BeautifulSoup) -> int:
     return -1
 
 
-def extract_rating_multi(soup: BeautifulSoup) -> List[int]:
+def extract_ratings(soup: BeautifulSoup) -> List[int]:
     """
     Extracts user rating for the hotel amenities. This function is needed
     because TripAdvisor does not use text for the rating. The rating class
@@ -325,7 +325,7 @@ class TripAdvisorReviewBlock:
         return []
 
 
-class TripAdvisorHotelInfo:
+class TripAdvisorHotelPage:
     """
     This class is used to launch and control the webdriver and parse the
     html code of every single page to extract all the neccessary information.
@@ -348,11 +348,12 @@ class TripAdvisorHotelInfo:
     - export
     """
 
-    def __init__(self, url, hotel_name, hotel_place):
+    def __init__(self, url: str, hotel_name: str, hotel_place: str,
+                 driver=None):
         self.url = url
         self.hotel_name = hotel_name
         self.hotel_place = hotel_place
-        self.driver = None
+        self.driver = driver
         self.review_count = 0
         self.data = {'name': list(),
                      'review_date': list(),
@@ -379,6 +380,24 @@ class TripAdvisorHotelInfo:
         return len(self.driver.find_element_by_class_name(
             trip_advisor_map['button_next']['class']).find_elements_by_tag_name(
             "a"))
+
+    def change_hotel(self, url: str, hotel_name: str, hotel_place: str):
+        """
+        Changes url and returns a new class object so that another hotel's
+        reviews can be parsed in the same session.
+
+        :param url: str
+            Hotel url
+        :param hotel_name: str
+            Hotel name
+        :param hotel_place: str
+            Hotel place
+        :return: TripAdvisorHotelPage
+            New object to collect further data
+        """
+        self.driver.get(url)
+        sleep(4)
+        return TripAdvisorHotelPage(url, hotel_name, hotel_place, self.driver)
 
     def click(self, button: str):
         """
