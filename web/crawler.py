@@ -2,7 +2,7 @@
 
 # author: Konstantinos Aznavouridis
 # email: aznavouridis.k@gmail.com
-# github: kosazna
+# github: https://github.com/kosazna
 
 # TripAdvisor Crawler developed on September 2020
 # for academic purposes and not commercial use
