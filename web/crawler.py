@@ -513,7 +513,7 @@ class TripAdvisorHotelPage:
         save_name = '_'.join([self.hotel_name, self.hotel_place])
         dst = Path(folder).joinpath(f'{save_name}.xlsx')
 
-        all_reviews.to_excel(dst)
+        all_reviews.to_excel(dst, index=False)
 
         print(f"Exported excel file at:\n    {dst}\n")
 
