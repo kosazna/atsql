@@ -14,8 +14,12 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from pathlib import Path
 from selenium import webdriver
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 from time import sleep
 from typing import List, Tuple
+
 
 # TripAdvisor tag and class mapper. Used for the BeautifulSoup objects
 trip_advisor_map = {'review_block': {'tag': 'div',
@@ -412,8 +416,14 @@ class TripAdvisorHotelPage:
                 trip_advisor_map['button_next'][
                     'class']).find_elements_by_tag_name("a")[1].click()
         elif button == 'Read more':
-            self.driver.find_element_by_class_name(
-                trip_advisor_map['button_readmore']['class']).click()
+            # self.driver.find_element_by_class_name(
+            #     trip_advisor_map['button_readmore']['class']).click()
+
+            to_click = WebDriverWait(self.driver, 10).until(
+                ec.element_to_be_clickable((By.CLASS_NAME,
+                                            trip_advisor_map['button_readmore'][
+                                                'class'])))
+            to_click.click()
 
     def launch(self, browser: str, executable: str):
         """
@@ -481,7 +491,7 @@ class TripAdvisorHotelPage:
 
         while _stopper == 8:
             self.click('Next')
-            sleep(2)
+            sleep(2.5)
             self.click('Read more')
             self.parse()
 
