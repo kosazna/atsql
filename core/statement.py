@@ -1,4 +1,4 @@
-from aztool_dw.core.dimension import *
+from atsql.core.dimension import *
 
 
 class SQLStatements:

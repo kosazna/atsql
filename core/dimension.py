@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from aztool_dw.util.misc import *
+from atsql.util.misc import *
 
 
 class DimEncoder:
