@@ -1,4 +1,4 @@
 INSERT INTO
-    "logs" ("datetime", "user", "meleti", "action", "comments")
+    "logs" ("timestamp", "user", "meleti", "action", "comments")
 VALUES
-    (:datetime, :user, :meleti, :action, :comments)
+    (:timestamp, :user, :meleti, :action, :comments)

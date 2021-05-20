@@ -131,8 +131,8 @@ class KtimaSQL:
         except Error as e:
             print(str(e) + " from " + self.db)
 
-    def update_logs(self, dt, user, action, comments):
-        params = {'datetime': dt,
+    def update_logs(self, timestamp, user, action, comments):
+        params = {'timestamp': timestamp,
                   'user': user,
                   'meleti': self.meleti,
                   'action': action,
