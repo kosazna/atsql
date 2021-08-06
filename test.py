@@ -1,7 +1,7 @@
 # import sqlite3
 from sqlite3 import connect, Error
 from contextlib import closing
-from sqlite3.dbapi2 import paramstyle
+from subprocess import Popen
 
 ota_query = open("ota.sql").read()
 shape_query = open("shape.sql").read()
@@ -31,7 +31,7 @@ class KtimaSQL:
                 with closing(con.cursor()) as cur:
                     cur.execute(ota_query, params)
 
-                    return [row[0] for row in cur.fetchall()]
+                    return tuple([row[0] for row in cur.fetchall()])
         except Error as e:
             print(str(e) + " from " + self.db)
             return []
@@ -44,7 +44,7 @@ class KtimaSQL:
                 with closing(con.cursor()) as cur:
                     cur.execute(shape_query, params)
 
-                    return [row[0] for row in cur.fetchall()]
+                    return tuple([row[0] for row in cur.fetchall()])
         except Error as e:
             print(str(e) + " from " + self.db)
             return []
@@ -56,7 +56,7 @@ class KtimaSQL:
                 with closing(con.cursor()) as cur:
                     cur.execute(locality_query, params)
 
-                    return cur.fetchall()
+                    return tuple(cur.fetchall())
         except Error as e:
             print(str(e) + " from " + self.db)
             return []
@@ -68,7 +68,7 @@ class KtimaSQL:
                 with closing(con.cursor()) as cur:
                     cur.execute(fbound_query, params)
 
-                    return cur.fetchall()
+                    return tuple(cur.fetchall())
         except Error as e:
             print(str(e) + " from " + self.db)
             return []
@@ -147,5 +147,6 @@ class KtimaSQL:
             print(str(e) + " from " + self.db)
 
 
-ktima = KtimaSQL("D:/ktima.db", "KT5-17", "ktima")
-print(ktima.update_logs("2021-05-20 15:16:06", 'azna', 'test', 'test'))
+Popen(["C:/Program Files/DB Browser for SQLite/DB Browser for SQLite.exe", "D:/ktima.db"])
+ktima = KtimaSQL("D:/ktima.db", "KT2-02", "ktima")
+print(ktima.get_fbound_docs())
